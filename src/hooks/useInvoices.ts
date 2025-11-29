@@ -1,6 +1,8 @@
 /**
  * Custom Hook: useInvoices
  * Encapsulates all invoice-related operations
+ * 
+ * Principle: Single source of truth for invoice operations
  */
 
 import { useMemo, useCallback } from 'react';
@@ -8,8 +10,11 @@ import { useAppStore, selectInvoices, selectClients } from '@/src/store';
 import type { Invoice, InvoiceStatus } from '@/src/types';
 
 export function useInvoices() {
+  // Store selectors
   const invoices = useAppStore(selectInvoices);
   const clients = useAppStore(selectClients);
+  
+  // Store actions
   const saveInvoice = useAppStore(state => state.saveInvoice);
   const updateInvoiceStatus = useAppStore(state => state.updateInvoiceStatus);
   const cancelInvoice = useAppStore(state => state.cancelInvoice);
@@ -18,7 +23,7 @@ export function useInvoices() {
   const getNextInvoiceNumber = useAppStore(state => state.getNextInvoiceNumber);
   const getClientById = useAppStore(state => state.getClientById);
 
-  // Sort by issue date descending (most recent first)
+  // Derived data
   const sortedInvoices = useMemo(
     () => [...invoices].sort((a, b) => b.issueDate - a.issueDate),
     [invoices]
@@ -29,6 +34,7 @@ export function useInvoices() {
     [sortedInvoices]
   );
 
+  // Query operations
   const filterByStatus = useCallback(
     (status: InvoiceStatus | 'ALL') => {
       if (status === 'ALL') return sortedInvoices;
@@ -41,74 +47,53 @@ export function useInvoices() {
     (invoiceId: string) => {
       const invoice = getInvoiceById(invoiceId);
       if (!invoice) return null;
-      const client = getClientById(invoice.clientId);
-      return { invoice, client };
+      return { invoice, client: getClientById(invoice.clientId) };
     },
     [getInvoiceById, getClientById]
   );
 
+  // Mutation operations
   const save = useCallback(
     (invoice: Invoice, clientName?: string) => {
-      const finalInvoice: Invoice = {
+      saveInvoice({
         ...invoice,
         clientName: clientName ?? getClientById(invoice.clientId)?.name,
-      };
-      saveInvoice(finalInvoice);
+      });
     },
     [saveInvoice, getClientById]
   );
 
   const markAsPaid = useCallback(
-    (id: string) => {
-      updateInvoiceStatus(id, 'PAID');
-    },
+    (id: string) => updateInvoiceStatus(id, 'PAID'),
     [updateInvoiceStatus]
   );
 
   const markAsPending = useCallback(
-    (id: string) => {
-      updateInvoiceStatus(id, 'PENDING');
-    },
+    (id: string) => updateInvoiceStatus(id, 'PENDING'),
     [updateInvoiceStatus]
   );
 
-  const cancel = useCallback(
-    (id: string) => {
-      cancelInvoice(id);
-    },
-    [cancelInvoice]
-  );
-
-  /**
-   * Elimina una factura. Solo funciona con borradores (DRAFT).
-   * @returns true si se eliminó, false si no era un borrador
-   */
-  const remove = useCallback(
-    (id: string): boolean => {
-      return deleteInvoice(id);
-    },
-    [deleteInvoice]
-  );
-
   return {
+    // Data
     invoices,
     sortedInvoices,
     recentInvoices,
+    clients,
+    invoiceCount: invoices.length,
+    
+    // Queries
     filterByStatus,
     getInvoiceById,
     getInvoiceWithClient,
+    getClientById,
     getNextInvoiceNumber,
+    
+    // Mutations
     save,
     saveInvoice,
-    deleteInvoice,
-    remove,
-    cancel,
-    cancelInvoice,
-    updateInvoiceStatus,
+    remove: deleteInvoice,
+    cancel: cancelInvoice,
     markAsPaid,
     markAsPending,
-    invoiceCount: invoices.length,
-    clients,
-    getClientById,
   };
 }

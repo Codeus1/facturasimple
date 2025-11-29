@@ -6,6 +6,7 @@
 import Papa from 'papaparse';
 import type { Invoice, InvoiceItem, InvoiceStatus } from '@/src/types';
 import { generateId } from '@/src/lib/utils';
+import { DEFAULT_DUE_DATE_OFFSET_MS } from '@/src/constants';
 
 // ============================================================================
 // TYPES
@@ -293,7 +294,7 @@ export function parseInvoicesFromCSV(
       // Validar fechas
       const issueDate = parseDate(cols.fechaEmision ? row[cols.fechaEmision] : undefined);
       const dueDate = parseDate(cols.fechaVencimiento ? row[cols.fechaVencimiento] : undefined) ||
-                      (issueDate + 30 * 24 * 60 * 60 * 1000);
+                      (issueDate + DEFAULT_DUE_DATE_OFFSET_MS);
       
       if (dueDate < issueDate) {
         errors.push(`Línea ${lineNum}: Fecha de vencimiento anterior a fecha de emisión`);

@@ -9,6 +9,9 @@ import {
   Input,
   Card,
   Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   Table,
   TableBody,
   TableCell,
@@ -134,16 +137,17 @@ export const ClientsPage: React.FC = () => {
         </Table>
       </Card>
 
-      <Dialog
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        title={editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}
-      >
-        <ClientForm
-          client={editingClient}
-          onSave={handleSave}
-          onCancel={() => setIsModalOpen(false)}
-        />
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
+          </DialogHeader>
+          <ClientForm
+            client={editingClient}
+            onSave={handleSave}
+            onCancel={() => setIsModalOpen(false)}
+          />
+        </DialogContent>
       </Dialog>
     </div>
   );

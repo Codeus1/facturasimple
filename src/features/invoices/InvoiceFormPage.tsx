@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
@@ -35,7 +35,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-  Select,
+  SimpleSelect,
   Table,
   TableBody,
   TableCell,
@@ -82,6 +82,7 @@ export const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({
       items: [{ id: generateId(), description: "", quantity: 1, priceUnit: 0, subtotal: 0 }],
       vatRate: DEFAULT_VAT_RATE,
       irpfRate: 0,
+      taxesIncluded: false,
       baseTotal: 0,
       vatAmount: 0,
       irpfAmount: 0,
@@ -108,15 +109,21 @@ export const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({
   const items = useWatch({ control: form.control, name: "items" });
   const vatRate = useWatch({ control: form.control, name: "vatRate" });
   const irpfRate = useWatch({ control: form.control, name: "irpfRate" });
+  const taxesIncluded = useWatch({ control: form.control, name: "taxesIncluded" });
 
   useEffect(() => {
     if (!items) return;
-    const totals = calculateInvoiceTotals({ items, vatRate: vatRate || 0, irpfRate: irpfRate || 0 });
+    const totals = calculateInvoiceTotals({ 
+      items, 
+      vatRate: vatRate || 0, 
+      irpfRate: irpfRate || 0,
+      taxesIncluded: taxesIncluded || false,
+    });
     form.setValue("baseTotal", totals.baseTotal);
     form.setValue("vatAmount", totals.vatAmount);
     form.setValue("irpfAmount", totals.irpfAmount);
     form.setValue("totalAmount", totals.totalAmount);
-  }, [items, vatRate, irpfRate, form]);
+  }, [items, vatRate, irpfRate, taxesIncluded, form]);
 
   const onSubmit = async (data: InvoiceFormData, targetStatus: "DRAFT" | "PENDING" | "PAID") => {
     setIsSubmitting(true);
@@ -201,10 +208,10 @@ export const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({
               <FormItem>
                 <FormLabel>Cliente</FormLabel>
                 <FormControl>
-                  <Select disabled={!isEditable} {...field}>
+                  <SimpleSelect disabled={!isEditable} {...field}>
                     <option value="">Selecciona un cliente</option>
                     {clients.map((c) => (<option key={c.id} value={c.id}>{c.name}</option>))}
-                  </Select>
+                  </SimpleSelect>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -277,13 +284,35 @@ export const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({
           <div className="bg-muted/10 p-6">
             <div className="flex flex-col md:flex-row justify-between items-end gap-8">
               <div className="w-full md:w-1/2 p-4 bg-card rounded-lg border border-border space-y-4">
+                {/* Toggle: Impuestos incluidos en precio */}
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
+                  <div>
+                    <Label htmlFor="taxesIncluded" className="mb-0 cursor-pointer font-medium">
+                      Impuestos incluidos en precio
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {form.watch("taxesIncluded") 
+                        ? "Los precios introducidos YA incluyen IVA/IRPF" 
+                        : "Los precios introducidos son BASE (se suma IVA)"}
+                    </p>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    id="taxesIncluded" 
+                    disabled={!isEditable} 
+                    checked={form.watch("taxesIncluded") || false}
+                    onChange={(e) => form.setValue("taxesIncluded", e.target.checked)}
+                    className="w-5 h-5 rounded border-input text-primary focus:ring-ring" 
+                  />
+                </div>
+
                 <FormField control={form.control} name="vatRate" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo de IVA</FormLabel>
                     <FormControl>
-                      <Select disabled={!isEditable} {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))}>
+                      <SimpleSelect disabled={!isEditable} {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))}>
                         {VAT_RATES.map((rate) => (<option key={rate.value} value={rate.value}>{rate.label}</option>))}
-                      </Select>
+                      </SimpleSelect>
                     </FormControl>
                   </FormItem>
                 )} />

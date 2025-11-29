@@ -49,6 +49,7 @@ export interface Invoice {
   dueDate: number;
   status: InvoiceStatus;
   items: InvoiceItem[];
+  taxesIncluded?: boolean; // Si true, los precios incluyen impuestos
   baseTotal: number;
   vatRate: number;
   vatAmount: number;

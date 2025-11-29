@@ -61,6 +61,7 @@ export interface InvoiceCalculationParams {
   items: Array<{ quantity: number; priceUnit: number }>;
   vatRate: number;
   irpfRate: number;
+  taxesIncluded?: boolean; // Si true, los precios ya incluyen impuestos
 }
 
 export interface InvoiceCalculationResult {
@@ -69,23 +70,59 @@ export interface InvoiceCalculationResult {
   irpfAmount: number;
   totalAmount: number;
   itemSubtotals: number[];
+  netPrices: number[]; // Precios netos (sin impuestos) por item
 }
 
+/**
+ * Calcula los totales de una factura.
+ * 
+ * Si taxesIncluded = false (por defecto):
+ *   - Los precios son NETOS (base imponible)
+ *   - Total = Base + IVA - IRPF
+ * 
+ * Si taxesIncluded = true:
+ *   - Los precios son BRUTOS (impuestos incluidos)
+ *   - Se desglosa hacia atrás: Base = Total / (1 + IVA - IRPF)
+ */
 export function calculateInvoiceTotals(params: InvoiceCalculationParams): InvoiceCalculationResult {
-  const { items, vatRate, irpfRate } = params;
+  const { items, vatRate, irpfRate, taxesIncluded = false } = params;
   
-  const itemSubtotals = items.map(item => item.quantity * item.priceUnit);
-  const baseTotal = itemSubtotals.reduce((sum, subtotal) => sum + subtotal, 0);
-  const vatAmount = baseTotal * vatRate;
-  const irpfAmount = baseTotal * irpfRate;
-  const totalAmount = baseTotal + vatAmount - irpfAmount;
+  const itemGrossTotals = items.map(item => item.quantity * item.priceUnit);
+  const grossTotal = itemGrossTotals.reduce((sum, subtotal) => sum + subtotal, 0);
+
+  let baseTotal: number;
+  let vatAmount: number;
+  let irpfAmount: number;
+  let totalAmount: number;
+  let netPrices: number[];
+
+  if (taxesIncluded) {
+    // Desglosar desde precio bruto (impuestos incluidos)
+    // Fórmula: Base = Bruto / (1 + IVA - IRPF)
+    const taxMultiplier = 1 + vatRate - irpfRate;
+    baseTotal = grossTotal / taxMultiplier;
+    vatAmount = baseTotal * vatRate;
+    irpfAmount = baseTotal * irpfRate;
+    totalAmount = grossTotal; // El total es lo que el usuario introdujo
+    
+    // Calcular precios netos por item
+    netPrices = itemGrossTotals.map(gross => gross / taxMultiplier);
+  } else {
+    // Cálculo normal: precios son base imponible
+    baseTotal = grossTotal;
+    vatAmount = baseTotal * vatRate;
+    irpfAmount = baseTotal * irpfRate;
+    totalAmount = baseTotal + vatAmount - irpfAmount;
+    netPrices = itemGrossTotals; // Los precios ya son netos
+  }
 
   return {
     baseTotal,
     vatAmount,
     irpfAmount,
     totalAmount,
-    itemSubtotals,
+    itemSubtotals: itemGrossTotals,
+    netPrices,
   };
 }
 

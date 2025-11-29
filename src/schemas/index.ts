@@ -41,6 +41,7 @@ export const InvoiceSchema = z.object({
   items: z
     .array(InvoiceItemSchema)
     .min(1, 'Añade al menos un concepto'),
+  taxesIncluded: z.boolean().optional().default(false), // IVA/IRPF incluido en precios
   baseTotal: z.number(),
   vatRate: z.number().min(0).max(1),
   vatAmount: z.number(),

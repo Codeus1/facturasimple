@@ -89,7 +89,7 @@ export const DashboardPage: React.FC = () => {
           <CardTitle className="text-xl">Actividad Reciente</CardTitle>
           <Link
             href={ROUTES.INVOICES}
-            className="text-sm text-primary font-medium hover:underline flex items-center"
+            className="text-sm font-medium hover:underline flex items-center"
           >
             Ver todas <ArrowRight size={16} className="ml-1" />
           </Link>

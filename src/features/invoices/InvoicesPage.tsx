@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { Plus, Download, Filter, Eye, CheckCircle, FileSpreadsheet } from 'lucide-react';
@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Select,
+  SimpleSelect,
 } from '@/src/components/ui';
 import { StatusBadge, Link } from '@/src/components';
 import type { InvoiceStatus } from '@/src/types';
@@ -82,7 +82,7 @@ export const InvoicesPage: React.FC = () => {
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Filter size={16} /> Estado
           </div>
-          <Select
+          <SimpleSelect
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value as InvoiceStatus | 'ALL')}
             className="w-40"
@@ -92,7 +92,7 @@ export const InvoicesPage: React.FC = () => {
             <option value="PENDING">Pendiente</option>
             <option value="PAID">Pagada</option>
             <option value="OVERDUE">Vencida</option>
-          </Select>
+          </SimpleSelect>
         </div>
 
         <Table>
@@ -166,3 +166,4 @@ export const InvoicesPage: React.FC = () => {
 };
 
 export default InvoicesPage;
+

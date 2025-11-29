@@ -45,7 +45,8 @@ interface AppActions {
   saveInvoice: (invoice: Invoice) => void;
   createInvoice: (invoice: Omit<Invoice, 'id'>) => Invoice;
   updateInvoiceStatus: (id: string, status: InvoiceStatus) => void;
-  deleteInvoice: (id: string) => void;
+  cancelInvoice: (id: string) => void;
+  deleteInvoice: (id: string) => boolean; // Returns false if invoice is not a draft
   
   // Selectors (computed)
   getNextInvoiceNumber: () => string;
@@ -166,10 +167,24 @@ export const useAppStore = create<AppStore>()(
         }));
       },
 
+      cancelInvoice: (id) => {
+        set(state => ({
+          invoices: state.invoices.map(inv =>
+            inv.id === id ? { ...inv, status: 'CANCELLED' as InvoiceStatus } : inv
+          ),
+        }));
+      },
+
       deleteInvoice: (id) => {
+        const invoice = get().invoices.find(inv => inv.id === id);
+        // Solo permitir borrar borradores
+        if (!invoice || invoice.status !== 'DRAFT') {
+          return false;
+        }
         set(state => ({
           invoices: removeById(state.invoices, id),
         }));
+        return true;
       },
 
       // ------------------------------------------------------------------

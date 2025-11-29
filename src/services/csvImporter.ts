@@ -49,7 +49,6 @@ function findColumn(headers: string[], ...patterns: string[]): string | null {
     const normalized = normalizeHeader(header);
     for (const pattern of patterns) {
       if (normalized.includes(pattern)) {
-        console.log(`[CSV Import] Columna "${header}" detectada como "${pattern}"`);
         return header; // Retorna el header ORIGINAL (con acentos)
       }
     }
@@ -104,6 +103,9 @@ function parseStatus(statusStr: string | undefined): InvoiceStatus | null {
     OVERDUE: 'OVERDUE',
     VENCIDA: 'OVERDUE',
     VENCIDO: 'OVERDUE',
+    CANCELLED: 'CANCELLED',
+    ANULADA: 'CANCELLED',
+    ANULADO: 'CANCELLED',
   };
 
   return statusMap[normalized] || null; // null si no es válido
@@ -172,9 +174,6 @@ export function parseInvoicesFromCSV(
   const data = parseResult.data;
   const headers = parseResult.meta.fields || [];
 
-  console.log('[CSV Import] Headers detectados:', headers);
-  console.log('[CSV Import] Primera fila:', data[0]);
-
   if (data.length === 0) {
     return {
       success: false,
@@ -198,8 +197,6 @@ export function parseInvoicesFromCSV(
     total: findColumn(headers, 'total', 'importe', 'amount'),
     concepto: findColumn(headers, 'concepto', 'descripcion', 'description', 'detalle'),
   };
-
-  console.log('[CSV Import] Columnas mapeadas:', cols);
 
   // Validar columnas mínimas
   if (!cols.numero && !cols.cliente) {

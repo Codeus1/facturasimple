@@ -12,6 +12,7 @@ export function useInvoices() {
   const clients = useAppStore(selectClients);
   const saveInvoice = useAppStore(state => state.saveInvoice);
   const updateInvoiceStatus = useAppStore(state => state.updateInvoiceStatus);
+  const cancelInvoice = useAppStore(state => state.cancelInvoice);
   const deleteInvoice = useAppStore(state => state.deleteInvoice);
   const getInvoiceById = useAppStore(state => state.getInvoiceById);
   const getNextInvoiceNumber = useAppStore(state => state.getNextInvoiceNumber);
@@ -71,6 +72,24 @@ export function useInvoices() {
     [updateInvoiceStatus]
   );
 
+  const cancel = useCallback(
+    (id: string) => {
+      cancelInvoice(id);
+    },
+    [cancelInvoice]
+  );
+
+  /**
+   * Elimina una factura. Solo funciona con borradores (DRAFT).
+   * @returns true si se eliminó, false si no era un borrador
+   */
+  const remove = useCallback(
+    (id: string): boolean => {
+      return deleteInvoice(id);
+    },
+    [deleteInvoice]
+  );
+
   return {
     invoices,
     sortedInvoices,
@@ -82,6 +101,9 @@ export function useInvoices() {
     save,
     saveInvoice,
     deleteInvoice,
+    remove,
+    cancel,
+    cancelInvoice,
     updateInvoiceStatus,
     markAsPaid,
     markAsPending,

@@ -28,6 +28,7 @@ export const INVOICE_STATUS = {
   PENDING: 'PENDING',
   PAID: 'PAID',
   OVERDUE: 'OVERDUE',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export type InvoiceStatus = (typeof INVOICE_STATUS)[keyof typeof INVOICE_STATUS];

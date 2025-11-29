@@ -11,6 +11,7 @@ const statusStyles: Record<InvoiceStatus, string> = {
   [INVOICE_STATUS.PENDING]: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
   [INVOICE_STATUS.PAID]: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300',
   [INVOICE_STATUS.OVERDUE]: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300',
+  [INVOICE_STATUS.CANCELLED]: 'bg-slate-100 text-slate-500 border-slate-300 dark:bg-slate-800 dark:text-slate-400 line-through',
 };
 
 const statusLabels: Record<InvoiceStatus, string> = {
@@ -18,6 +19,7 @@ const statusLabels: Record<InvoiceStatus, string> = {
   [INVOICE_STATUS.PENDING]: 'Pendiente',
   [INVOICE_STATUS.PAID]: 'Pagada',
   [INVOICE_STATUS.OVERDUE]: 'Vencida',
+  [INVOICE_STATUS.CANCELLED]: 'Anulada',
 };
 
 interface StatusBadgeProps {

@@ -1,12 +1,13 @@
 ﻿"use client";
 
 import React, { useState, useRef } from 'react';
-import { Plus, Download, Filter, Eye, CheckCircle, FileSpreadsheet, Upload, AlertCircle } from 'lucide-react';
+import { Plus, Download, Filter, Eye, CheckCircle, FileSpreadsheet, Upload, AlertCircle, Trash2, Ban } from 'lucide-react';
 import { useInvoices, useNavigation, useMounted } from '@/src/hooks';
 import { ROUTES } from '@/src/constants';
 import { formatCurrency, formatDate } from '@/src/lib/utils';
 import { exportInvoicesToCSV, generateInvoicePDF, parseInvoicesFromCSV, readFileAsText } from '@/src/services';
 import type { ImportResult } from '@/src/services';
+import type { Invoice, InvoiceStatus } from '@/src/types';
 import {
   Button,
   Card,
@@ -23,9 +24,16 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from '@/src/components/ui';
 import { StatusBadge, Link } from '@/src/components';
-import type { InvoiceStatus } from '@/src/types';
 
 // ============================================================================
 // INVOICES LIST PAGE
@@ -33,13 +41,15 @@ import type { InvoiceStatus } from '@/src/types';
 
 export const InvoicesPage: React.FC = () => {
   const mounted = useMounted();
-  const { sortedInvoices, filterByStatus, markAsPaid, getClientById, clients, saveInvoice } = useInvoices();
+  const { sortedInvoices, filterByStatus, markAsPaid, getClientById, clients, saveInvoice, remove, cancel } = useInvoices();
   const { goToNewInvoice } = useNavigation();
   
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'ALL'>('ALL');
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [cancelConfirm, setCancelConfirm] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!mounted) {
@@ -65,6 +75,32 @@ export const InvoicesPage: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
     markAsPaid(id);
+  };
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirm) {
+      remove(deleteConfirm);
+      setDeleteConfirm(null);
+    }
+  };
+
+  const handleCancel = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCancelConfirm(id);
+  };
+
+  const confirmCancel = () => {
+    if (cancelConfirm) {
+      cancel(cancelConfirm);
+      setCancelConfirm(null);
+    }
   };
 
   const handleExport = () => {
@@ -123,7 +159,7 @@ export const InvoicesPage: React.FC = () => {
 
   const handleConfirmImport = () => {
     if (importResult?.invoices) {
-      importResult.invoices.forEach(invoice => {
+      importResult.invoices.forEach((invoice: Invoice) => {
         saveInvoice(invoice);
       });
     }
@@ -178,6 +214,7 @@ export const InvoicesPage: React.FC = () => {
             <option value="PENDING">Pendiente</option>
             <option value="PAID">Pagada</option>
             <option value="OVERDUE">Vencida</option>
+            <option value="CANCELLED">Anulada</option>
           </SimpleSelect>
         </div>
 
@@ -217,28 +254,61 @@ export const InvoicesPage: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
+                      {/* Marcar como pagada - solo para pendientes */}
                       {inv.status === 'PENDING' && (
                         <Button
                           variant="ghost"
                           size="icon"
+                          title="Marcar como pagada"
                           className="text-green-600 hover:text-green-700 hover:bg-green-100 dark:hover:bg-green-900/30"
                           onClick={e => handleMarkPaid(e, inv.id)}
                         >
                           <CheckCircle size={18} />
                         </Button>
                       )}
+                      
+                      {/* Descargar PDF */}
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Descargar PDF"
                         onClick={e => handleDownload(e, inv.id)}
                       >
                         <Download size={18} />
                       </Button>
+                      
+                      {/* Ver detalle */}
                       <Link href={ROUTES.INVOICE_DETAIL(inv.id)}>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" title="Ver detalle">
                           <Eye size={18} />
                         </Button>
                       </Link>
+
+                      {/* Anular factura - solo para emitidas (no DRAFT ni CANCELLED) */}
+                      {inv.status !== 'DRAFT' && inv.status !== 'CANCELLED' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Anular factura"
+                          className="text-amber-600 hover:text-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                          onClick={e => handleCancel(e, inv.id)}
+                        >
+                          <Ban size={18} />
+                        </Button>
+                      )}
+
+                      {/* Borrar - solo para borradores */}
+                      {inv.status === 'DRAFT' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Eliminar borrador"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30"
+                          onClick={e => handleDelete(e, inv.id)}
+                        >
+                          <Trash2 size={18} />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -290,7 +360,7 @@ export const InvoicesPage: React.FC = () => {
                       Problemas detectados ({importResult.errors.length})
                     </p>
                     <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1 max-h-40 overflow-y-auto">
-                      {importResult.errors.slice(0, 10).map((err, i) => (
+                      {importResult.errors.slice(0, 10).map((err: string, i: number) => (
                         <li key={i} className="break-words">{err}</li>
                       ))}
                       {importResult.errors.length > 10 && (
@@ -322,6 +392,48 @@ export const InvoicesPage: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Confirmación - Eliminar Borrador */}
+      <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar Borrador</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que quieres eliminar este borrador? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal de Confirmación - Anular Factura */}
+      <AlertDialog open={!!cancelConfirm} onOpenChange={() => setCancelConfirm(null)}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Anular Factura</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que quieres anular esta factura? La factura quedará marcada como anulada pero no se eliminará del sistema (requisito legal).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+              onClick={confirmCancel}
+            >
+              Anular Factura
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

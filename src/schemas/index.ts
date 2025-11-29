@@ -37,7 +37,7 @@ export const InvoiceSchema = z.object({
   clientId: z.string().min(1, 'Debes seleccionar un cliente'),
   issueDate: z.number(),
   dueDate: z.number(),
-  status: z.enum(['DRAFT', 'PENDING', 'PAID', 'OVERDUE']),
+  status: z.enum(['DRAFT', 'PENDING', 'PAID', 'OVERDUE', 'CANCELLED']),
   items: z
     .array(InvoiceItemSchema)
     .min(1, 'Añade al menos un concepto'),

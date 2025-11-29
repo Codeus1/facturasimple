@@ -145,23 +145,46 @@ function parseNumber(value: string | undefined): number {
 // MAIN IMPORTER
 // ============================================================================
 
+/**
+ * Parsea un archivo CSV y retorna las facturas importadas.
+ * Usa PapaParse para leer el File directamente (más eficiente que FileReader manual).
+ */
 export function parseInvoicesFromCSV(
-  csvContent: string,
+  file: File,
+  options: ImportOptions
+): Promise<ImportResult> {
+  return new Promise((resolve) => {
+    Papa.parse<CsvRow>(file, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim(),
+      complete: (parseResult) => {
+        const result = processCSVData(parseResult, options);
+        resolve(result);
+      },
+      error: (error) => {
+        resolve({
+          success: false,
+          imported: 0,
+          skipped: 0,
+          errors: [`Error al leer el archivo CSV: ${error.message}`],
+          invoices: [],
+        });
+      },
+    });
+  });
+}
+
+/**
+ * Procesa los datos parseados del CSV.
+ */
+function processCSVData(
+  parseResult: Papa.ParseResult<CsvRow>,
   options: ImportOptions
 ): ImportResult {
   const errors: string[] = [];
   const invoices: Invoice[] = [];
   let skippedCount = 0;
-
-  // Parsear CSV con PapaParse
-  // Quitar BOM si existe
-  const cleanContent = csvContent.replace(/^\uFEFF/, '');
-  
-  const parseResult = Papa.parse<CsvRow>(cleanContent, {
-    header: true,
-    skipEmptyLines: true,
-    transformHeader: (header) => header.trim(),
-  });
 
   // Reportar errores de parsing
   if (parseResult.errors.length > 0) {
@@ -365,17 +388,4 @@ export function parseInvoicesFromCSV(
     errors,
     invoices,
   };
-}
-
-// ============================================================================
-// FILE READER
-// ============================================================================
-
-export function readFileAsText(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error('Error al leer el archivo'));
-    reader.readAsText(file, 'UTF-8');
-  });
 }

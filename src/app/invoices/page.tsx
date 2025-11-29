@@ -5,7 +5,7 @@ import { Plus, Download, Filter, Eye, CheckCircle, FileSpreadsheet, Upload, Tras
 import { useInvoices, useNavigation, useMounted } from '@/src/hooks';
 import { ROUTES } from '@/src/constants';
 import { formatCurrency, formatDate } from '@/src/lib/utils';
-import { exportInvoicesToCSV, generateInvoicePDF, parseInvoicesFromCSV, readFileAsText } from '@/src/services';
+import { exportInvoicesToCSV, generateInvoicePDF, parseInvoicesFromCSV } from '@/src/services';
 import type { ImportResult } from '@/src/services';
 import type { Invoice, InvoiceStatus } from '@/src/types';
 import {
@@ -96,8 +96,6 @@ export default function InvoicesPage() {
     setImportResult(null);
 
     try {
-      const content = await readFileAsText(file);
-      
       const clientMap = new Map<string, string>();
       clients.forEach(c => clientMap.set(c.name.toLowerCase(), c.id));
 
@@ -105,7 +103,7 @@ export default function InvoicesPage() {
         sortedInvoices.map(inv => inv.invoiceNumber)
       );
 
-      const result = parseInvoicesFromCSV(content, { 
+      const result = await parseInvoicesFromCSV(file, { 
         clientMap,
         existingInvoiceNumbers,
         skipDuplicates: false,

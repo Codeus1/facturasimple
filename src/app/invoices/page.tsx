@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Plus, Download, Filter, Eye, CheckCircle, FileSpreadsheet, Upload, Trash2, Ban, Mail, Search, X, Calendar, DollarSign } from 'lucide-react';
 import { useInvoices, useNavigation, useMounted, useDebounce, useInvoiceSearch, DEFAULT_FILTERS, hasActiveFilters, countActiveFilters } from '@/src/hooks';
 import type { InvoiceSearchFilters } from '@/src/hooks';
@@ -21,6 +21,12 @@ import {
   TableRow,
   SimpleSelect,
   Label,
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 } from '@/src/components/ui';
 import { 
   StatusBadge, 
@@ -46,10 +52,26 @@ export default function InvoicesPage() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const debouncedQuery = useDebounce(filters.query, 300);
   
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
   // Apply debounced search
   const searchFilters = { ...filters, query: debouncedQuery };
   const filteredInvoices = useInvoiceSearch(sortedInvoices, searchFilters);
   
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+  const paginatedInvoices = filteredInvoices.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedQuery, filters.status, filters.clientId, filters.dateFrom, filters.dateTo, filters.amountMin, filters.amountMax]);
+
   // Dialog States
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -237,7 +259,7 @@ export default function InvoicesPage() {
         />
         
         <InvoicesTable
-          invoices={filteredInvoices}
+          invoices={paginatedInvoices}
           getClientById={getClientById}
           onMarkPaid={handleMarkPaid}
           onDownload={handleDownload}
@@ -245,6 +267,39 @@ export default function InvoicesPage() {
           onDelete={handleDelete}
           onCancel={handleCancel}
         />
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-4 border-t border-border">
+            <div className="text-sm text-muted-foreground">
+              Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredInvoices.length)} de {filteredInvoices.length} facturas
+            </div>
+            
+            <Pagination className="w-auto mx-0">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                
+                <PaginationItem>
+                  <span className="text-sm font-medium px-4">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                </PaginationItem>
+
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </Card>
 
       {/* Dialogs */}

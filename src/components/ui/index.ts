@@ -12,3 +12,5 @@ export * from "./label";
 export * from "./simple-select";
 export * from "./spinner";
 export * from "./table";
+export * from "./pagination";
+

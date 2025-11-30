@@ -8,6 +8,8 @@
 import { useMemo, useCallback } from 'react';
 import { useAppStore, selectInvoices, selectClients } from '@/src/store';
 import type { Invoice, InvoiceStatus } from '@/src/types';
+import { storeInvoiceRepository } from '@/src/data/repositories/storeInvoiceRepository';
+import { setInvoiceStatus, cancelInvoice, deleteDraftInvoice, saveInvoice as saveInvoiceUseCase } from '@/src/domain/usecases/invoices';
 
 export function useInvoices() {
   // Store selectors
@@ -15,10 +17,10 @@ export function useInvoices() {
   const clients = useAppStore(selectClients);
   
   // Store actions
-  const saveInvoice = useAppStore(state => state.saveInvoice);
+  const saveInvoiceToStore = useAppStore(state => state.saveInvoice);
   const updateInvoiceStatus = useAppStore(state => state.updateInvoiceStatus);
-  const cancelInvoice = useAppStore(state => state.cancelInvoice);
-  const deleteInvoice = useAppStore(state => state.deleteInvoice);
+  const cancelInvoiceInStore = useAppStore(state => state.cancelInvoice);
+  const deleteInvoiceFromStore = useAppStore(state => state.deleteInvoice);
   const getInvoiceById = useAppStore(state => state.getInvoiceById);
   const getNextInvoiceNumber = useAppStore(state => state.getNextInvoiceNumber);
   const getClientById = useAppStore(state => state.getClientById);
@@ -54,13 +56,16 @@ export function useInvoices() {
 
   // Mutation operations
   const save = useCallback(
-    (invoice: Invoice, clientName?: string) => {
-      saveInvoice({
+    async (invoice: Invoice, clientName?: string) => {
+      const enriched: Invoice = {
         ...invoice,
         clientName: clientName ?? getClientById(invoice.clientId)?.name,
-      });
+      };
+      await saveInvoiceUseCase(storeInvoiceRepository, enriched);
+      // Keep store action for reactivity (use cases already use store repo, but this maintains compatibility if store changes)
+      saveInvoiceToStore(enriched);
     },
-    [saveInvoice, getClientById]
+    [getClientById, saveInvoiceToStore]
   );
 
   const markAsPaid = useCallback(
@@ -71,6 +76,25 @@ export function useInvoices() {
   const markAsPending = useCallback(
     (id: string) => updateInvoiceStatus(id, 'PENDING'),
     [updateInvoiceStatus]
+  );
+
+  const cancel = useCallback(
+    async (id: string) => {
+      await cancelInvoice(storeInvoiceRepository, id);
+      cancelInvoiceInStore(id);
+    },
+    [cancelInvoiceInStore]
+  );
+
+  const remove = useCallback(
+    async (id: string) => {
+      const deleted = await deleteDraftInvoice(storeInvoiceRepository, id);
+      if (deleted) {
+        deleteInvoiceFromStore(id);
+      }
+      return deleted;
+    },
+    [deleteInvoiceFromStore]
   );
 
   return {
@@ -90,9 +114,9 @@ export function useInvoices() {
     
     // Mutations
     save,
-    saveInvoice,
-    remove: deleteInvoice,
-    cancel: cancelInvoice,
+    saveInvoice: saveInvoiceToStore,
+    remove,
+    cancel,
     markAsPaid,
     markAsPending,
   };

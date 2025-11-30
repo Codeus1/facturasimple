@@ -11,7 +11,7 @@ export function useClients() {
   const clients = useAppStore(selectClients);
   const addClient = useAppStore(state => state.addClient);
   const updateClient = useAppStore(state => state.updateClient);
-  const deleteClient = useAppStore(state => state.deleteClient);
+  const deleteClientAction = useAppStore(state => state.deleteClient);
   const getClientById = useAppStore(state => state.getClientById);
 
   const sortedClients = useMemo(
@@ -40,7 +40,7 @@ export function useClients() {
   );
 
   const saveClient = useCallback(
-    (client: Client) => {
+    async (client: Client) => {
       const exists = clients.some(c => c.id === client.id);
       if (exists) {
         updateClient(client);
@@ -51,6 +51,13 @@ export function useClients() {
     [clients, addClient, updateClient]
   );
 
+  const deleteClientSafe = useCallback(
+    async (id: string) => {
+      deleteClientAction(id);
+    },
+    [deleteClientAction]
+  );
+
   return {
     clients,
     sortedClients,
@@ -58,7 +65,7 @@ export function useClients() {
     createClient,
     saveClient,
     updateClient,
-    deleteClient,
+    deleteClient: deleteClientSafe,
     getClientById,
     clientCount: clients.length,
   };

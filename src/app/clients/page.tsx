@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Plus, Search, Trash2, Edit2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Trash2, Edit2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useClients, useMounted } from '@/src/hooks';
 import type { Client } from '@/src/types';
 import {
@@ -19,6 +19,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 } from '@/src/components/ui';
 import { ClientForm, PageHeader, PageLoading, EmptyState, ConfirmDialog } from '@/src/components';
 
@@ -35,11 +41,27 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   if (!mounted) {
     return <PageLoading message="Cargando clientes..." />;
   }
 
   const filteredClients = search ? searchClients(search) : clients;
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
+  const paginatedClients = filteredClients.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // ========== HANDLERS ==========
 
@@ -89,10 +111,43 @@ export default function ClientsPage() {
       <Card>
         <SearchBar value={search} onChange={setSearch} />
         <ClientsTable
-          clients={filteredClients}
+          clients={paginatedClients}
           onEdit={handleEdit}
           onDelete={handleDeleteClick}
         />
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-4 border-t border-border">
+            <div className="text-sm text-muted-foreground">
+              Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredClients.length)} de {filteredClients.length} clientes
+            </div>
+            
+            <Pagination className="w-auto mx-0">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                
+                <PaginationItem>
+                  <span className="text-sm font-medium px-4">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                </PaginationItem>
+
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </Card>
 
       {/* Client Form Modal */}
@@ -197,7 +252,7 @@ const ClientRow: React.FC<ClientRowProps> = ({ client, onEdit, onDelete }) => (
     <TableCell className="font-mono text-muted-foreground">{client.nif}</TableCell>
     <TableCell className="text-muted-foreground">{client.email}</TableCell>
     <TableCell className="text-right">
-      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex justify-end gap-2">
         <Button variant="ghost" size="icon" onClick={() => onEdit(client)}>
           <Edit2 size={16} />
         </Button>

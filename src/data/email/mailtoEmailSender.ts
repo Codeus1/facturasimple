@@ -10,8 +10,9 @@ function openMailto(message: EmailMessage): void {
   if (message.cc) params.set('cc', message.cc);
   if (message.bcc) params.set('bcc', message.bcc);
 
-  const mailtoUrl = `mailto:${encodeURIComponent(message.to)}?${params.toString()}`;
-  window.open(mailtoUrl, '_blank');
+  const mailtoUrl = `mailto:${message.to}?${params.toString()}`;
+  // Use window.location.href instead of window.open to avoid empty tabs ("weird pages")
+  window.location.href = mailtoUrl;
 }
 
 export class MailtoEmailSender implements EmailSender {

@@ -45,6 +45,7 @@ export const APP_CONFIG = {
   name: 'FacturaSimple',
   version: '1.0.0',
   storageKey: 'factura-simple-storage',
+  storageVersion: 1,
 } as const;
 
 // ============================================================================

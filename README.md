@@ -1,5 +1,5 @@
 # FacturaSimple B2B
-
+## factura
 Sistema de facturación profesional para autónomos y pequeñas empresas. Construido con React, TypeScript y principios de arquitectura escalable.
 
 ## 🚀 Características

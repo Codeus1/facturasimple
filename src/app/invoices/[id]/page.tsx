@@ -23,27 +23,26 @@ import {
   calculateInvoiceTotals,
 } from '@/lib/utils';
 import { generateInvoicePDF } from '@/services';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SimpleSelect } from '@/components/ui/simple-select';
 import {
-  Button,
-  Input,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  SimpleSelect,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
+} from '@/components/ui/table';
+import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-} from '@/components/ui';
+} from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { StatusBadge } from '@/components';
 import type { Invoice } from '@/types';

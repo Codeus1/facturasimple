@@ -1,12 +1,17 @@
-"use client";
+'use client';
 
 import { Button } from '@/components/ui/button';
-import { DialogFooter, DialogHeader } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import type { ImportResult } from '@/services';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
 import { AlertCircle } from 'lucide-react';
 import React from 'react';
-
 
 // ============================================================================
 // TYPES
@@ -46,8 +51,8 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
             {hasImports
               ? `Se encontraron ${result.imported} facturas nuevas para importar.`
               : hasErrors
-              ? 'Hay problemas que necesitan tu atención.'
-              : 'No se encontraron facturas nuevas para importar.'}
+                ? 'Hay problemas que necesitan tu atención.'
+                : 'No se encontraron facturas nuevas para importar.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -71,15 +76,13 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
           )}
 
           {/* Errors list */}
-          {hasErrors && (
-            <ErrorsList errors={result.errors} />
-          )}
+          {hasErrors && <ErrorsList errors={result.errors} />}
 
           {/* Info note */}
           <div className="bg-muted/50 rounded-lg p-3">
             <p className="text-xs text-muted-foreground">
-              <strong>Nota:</strong> Las facturas con números que ya existen en el sistema 
-              serán ignoradas para evitar duplicados.
+              <strong>Nota:</strong> Las facturas con números que ya existen en el sistema serán
+              ignoradas para evitar duplicados.
             </p>
           </div>
         </div>
@@ -88,11 +91,7 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
           <Button variant="outline" onClick={onCancel}>
             {hasImports ? 'Cancelar' : 'Cerrar'}
           </Button>
-          {hasImports && (
-            <Button onClick={onConfirm}>
-              Importar {result.imported} Facturas
-            </Button>
-          )}
+          {hasImports && <Button onClick={onConfirm}>Importar {result.imported} Facturas</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -118,11 +117,11 @@ const ErrorsList: React.FC<{ errors: string[] }> = ({ errors }) => {
           </p>
           <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1 max-h-40 overflow-y-auto">
             {visibleErrors.map((err, i) => (
-              <li key={i} className="break-words">{err}</li>
+              <li key={i} className="break-words">
+                {err}
+              </li>
             ))}
-            {remainingCount > 0 && (
-              <li className="italic">...y {remainingCount} más</li>
-            )}
+            {remainingCount > 0 && <li className="italic">...y {remainingCount} más</li>}
           </ul>
         </div>
       </div>

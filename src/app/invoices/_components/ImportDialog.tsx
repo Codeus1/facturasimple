@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
-import type { ImportResult } from '@/src/services';
+import type { ImportResult } from '@/services';
 import {
   Button,
   Dialog,
@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/src/components/ui';
+} from '@/components/ui';
 
 // ============================================================================
 // TYPES

@@ -5,9 +5,9 @@
 
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { Invoice, Client } from '@/src/types';
-import { formatCurrency, formatDate } from '@/src/lib/utils';
-import { ISSUER_INFO } from '@/src/constants';
+import type { Invoice, Client } from '@/types';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import { ISSUER_INFO } from '@/constants';
 
 // ============================================================================
 // CONFIGURATION

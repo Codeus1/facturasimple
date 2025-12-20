@@ -3,7 +3,7 @@
  * Exports invoice data to CSV format
  */
 
-import type { Invoice } from '@/src/types';
+import type { Invoice } from '@/types';
 
 // ============================================================================
 // CSV HELPER

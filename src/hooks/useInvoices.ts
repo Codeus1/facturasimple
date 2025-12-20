@@ -6,10 +6,10 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import { useAppStore, selectInvoices, selectClients } from '@/src/store';
-import type { Invoice, InvoiceStatus } from '@/src/types';
-import { storeInvoiceRepository } from '@/src/data/repositories/storeInvoiceRepository';
-import { setInvoiceStatus, cancelInvoice, deleteDraftInvoice, saveInvoice as saveInvoiceUseCase } from '@/src/domain/usecases/invoices';
+import { useAppStore, selectInvoices, selectClients } from '@/store';
+import type { Invoice, InvoiceStatus } from '@/types';
+import { storeInvoiceRepository } from '@/data/repositories/storeInvoiceRepository';
+import { setInvoiceStatus, cancelInvoice, deleteDraftInvoice, saveInvoice as saveInvoiceUseCase } from '@/domain/usecases/invoices';
 
 export function useInvoices() {
   // Store selectors

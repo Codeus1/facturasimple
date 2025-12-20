@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { ROUTES } from '@/src/constants';
+import { ROUTES } from '@/constants';
 
 export function useNavigation() {
   const router = useRouter();

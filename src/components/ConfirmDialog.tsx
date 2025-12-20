@@ -10,7 +10,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from '@/src/components/ui';
+} from '@/components/ui';
 
 // ============================================================================
 // TYPES

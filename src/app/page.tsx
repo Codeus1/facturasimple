@@ -2,13 +2,13 @@
 
 import React from 'react';
 import { Euro, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
-import { useAppStore } from '@/src/store';
-import { useMounted } from '@/src/hooks';
-import { Card, CardContent, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/src/components/ui';
-import { StatusBadge, Link, PageHeader, PageLoading, EmptyState } from '@/src/components';
-import { formatCurrency } from '@/src/lib/utils';
-import { ROUTES } from '@/src/constants';
-import type { Invoice } from '@/src/types';
+import { useAppStore } from '@/store';
+import { useMounted } from '@/hooks';
+import { Card, CardContent, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import { StatusBadge, Link, PageHeader, PageLoading, EmptyState } from '@/components';
+import { formatCurrency } from '@/lib/utils';
+import { ROUTES } from '@/constants';
+import type { Invoice } from '@/types';
 
 // ============================================================================
 // DASHBOARD PAGE (Home)

@@ -4,9 +4,9 @@
  */
 
 import Papa from 'papaparse';
-import type { Invoice, InvoiceItem, InvoiceStatus } from '@/src/types';
-import { generateId } from '@/src/lib/utils';
-import { DEFAULT_DUE_DATE_OFFSET_MS } from '@/src/constants';
+import type { Invoice, InvoiceItem, InvoiceStatus } from '@/types';
+import { generateId } from '@/lib/utils';
+import { DEFAULT_DUE_DATE_OFFSET_MS } from '@/constants';
 
 // ============================================================================
 // TYPES

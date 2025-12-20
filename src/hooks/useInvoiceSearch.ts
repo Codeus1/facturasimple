@@ -7,7 +7,7 @@
  */
 
 import { useMemo } from 'react';
-import type { Invoice, InvoiceStatus } from '@/src/types';
+import type { Invoice, InvoiceStatus } from '@/types';
 
 // ============================================================================
 // TYPES

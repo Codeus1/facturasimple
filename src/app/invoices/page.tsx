@@ -2,13 +2,13 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Plus, Download, Filter, Eye, CheckCircle, FileSpreadsheet, Upload, Trash2, Ban, Mail, Search, X, Calendar, DollarSign } from 'lucide-react';
-import { useInvoices, useNavigation, useMounted, useDebounce, useInvoiceSearch, DEFAULT_FILTERS, hasActiveFilters, countActiveFilters } from '@/src/hooks';
-import type { InvoiceSearchFilters } from '@/src/hooks';
-import { ROUTES } from '@/src/constants';
-import { formatCurrency, formatDate, formatDateForInput } from '@/src/lib/utils';
-import { exportInvoicesToCSV, generateInvoicePDF, parseInvoicesFromCSV, sendInvoiceEmail, canSendEmail } from '@/src/services';
-import type { ImportResult } from '@/src/services';
-import type { Invoice, InvoiceStatus } from '@/src/types';
+import { useInvoices, useNavigation, useMounted, useDebounce, useInvoiceSearch, DEFAULT_FILTERS, hasActiveFilters, countActiveFilters } from '@/hooks';
+import type { InvoiceSearchFilters } from '@/hooks';
+import { ROUTES } from '@/constants';
+import { formatCurrency, formatDate, formatDateForInput } from '@/lib/utils';
+import { exportInvoicesToCSV, generateInvoicePDF, parseInvoicesFromCSV, sendInvoiceEmail, canSendEmail } from '@/services';
+import type { ImportResult } from '@/services';
+import type { Invoice, InvoiceStatus } from '@/types';
 import {
   Button,
   Card,
@@ -27,7 +27,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/src/components/ui';
+} from '@/components/ui';
 import { 
   StatusBadge, 
   Link, 
@@ -35,7 +35,7 @@ import {
   PageLoading, 
   EmptyState, 
   ConfirmDialog 
-} from '@/src/components';
+} from '@/components';
 import { ImportDialog } from './_components/ImportDialog';
 
 // ============================================================================
@@ -233,13 +233,16 @@ export default function InvoicesPage() {
               onChange={handleFileSelect}
               className="hidden"
             />
-            <Button variant="outline" icon={Upload} onClick={handleImportClick} isLoading={isImporting}>
-              Importar
+            <Button variant="outline" onClick={handleImportClick} disabled={isImporting}>
+              <Upload className="h-4 w-4" />
+              {isImporting ? "Importando..." : "Importar"}
             </Button>
-            <Button variant="outline" icon={FileSpreadsheet} onClick={handleExport}>
+            <Button variant="outline" onClick={handleExport}>
+              <FileSpreadsheet className="h-4 w-4" />
               Exportar
             </Button>
-            <Button icon={Plus} onClick={goToNewInvoice}>
+            <Button onClick={goToNewInvoice}>
+              <Plus className="h-4 w-4" />
               Nueva Factura
             </Button>
           </>

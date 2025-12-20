@@ -10,10 +10,10 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Client, Invoice, InvoiceStatus, Theme, KPIStats } from '@/src/types';
-import { APP_CONFIG, ROUTES } from '@/src/constants';
-import { generateId, generateInvoiceNumber, updateById, removeById } from '@/src/lib/utils';
-import { validatedStorage } from '@/src/data/persistence/storage';
+import type { Client, Invoice, InvoiceStatus, Theme, KPIStats } from '@/types';
+import { APP_CONFIG, ROUTES } from '@/constants';
+import { generateId, generateInvoiceNumber, updateById, removeById } from '@/lib/utils';
+import { validatedStorage } from '@/data/persistence/storage';
 
 // ============================================================================
 // STATE INTERFACE

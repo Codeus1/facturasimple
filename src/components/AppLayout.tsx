@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { LayoutDashboard, Users, FileText, Menu, X, Sun, Moon } from 'lucide-react';
-import { useNavigation, useTheme, useMounted } from '@/src/hooks';
-import { ROUTES } from '@/src/constants';
-import { cn } from '@/src/lib/utils';
-import { Button } from '@/src/components/ui';
-import { Link } from '@/src/components/Link';
+import { useNavigation, useTheme, useMounted } from '@/hooks';
+import { ROUTES } from '@/constants';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui';
+import { Link } from '@/components/Link';
 
 // ============================================================================
 // NAV ITEM COMPONENT

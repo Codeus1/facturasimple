@@ -2,10 +2,10 @@
  * Client repository backed by the Zustand store.
  * This keeps current behaviour while allowing the UI to depend on an interface.
  */
-import type { ClientRepository } from '@/src/domain/repositories';
-import type { ClientEntity } from '@/src/domain/entities';
-import { parseClient } from '@/src/domain/entities';
-import { useAppStore } from '@/src/store';
+import type { ClientRepository } from '@/domain/repositories';
+import type { ClientEntity } from '@/domain/entities';
+import { parseClient } from '@/domain/entities';
+import { useAppStore } from '@/store';
 
 export const storeClientRepository: ClientRepository = {
   async list(): Promise<ClientEntity[]> {

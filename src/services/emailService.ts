@@ -6,11 +6,11 @@
  * Open/Closed: Can be extended with new email providers without modifying core logic
  */
 
-import type { Invoice, Client } from '@/src/types';
-import type { EmailSender, EmailMessage } from '@/src/domain/email';
-import { mailtoEmailSender } from '@/src/data/email/mailtoEmailSender';
-import { formatCurrency, formatDate } from '@/src/lib/utils';
-import { ISSUER_INFO } from '@/src/constants';
+import type { Invoice, Client } from '@/types';
+import type { EmailSender, EmailMessage } from '@/domain/email';
+import { mailtoEmailSender } from '@/data/email/mailtoEmailSender';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import { ISSUER_INFO } from '@/constants';
 
 // ============================================================================
 // TYPES

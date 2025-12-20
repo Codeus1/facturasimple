@@ -2,7 +2,7 @@
  * Invoice use cases operating on repository contracts.
  * Keeps domain logic out of UI components.
  */
-import type { InvoiceStatus } from '@/src/types';
+import type { InvoiceStatus } from '@/types';
 import type { InvoiceRepository } from '../repositories';
 import type { InvoiceEntity } from '../entities';
 import { parseInvoice } from '../entities';

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Trash2, Edit2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useClients, useMounted } from '@/src/hooks';
-import type { Client } from '@/src/types';
+import { useClients, useMounted } from '@/hooks';
+import type { Client } from '@/types';
 import {
   Button,
   Input,
@@ -25,8 +25,8 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/src/components/ui';
-import { ClientForm, PageHeader, PageLoading, EmptyState, ConfirmDialog } from '@/src/components';
+} from '@/components/ui';
+import { ClientForm, PageHeader, PageLoading, EmptyState, ConfirmDialog } from '@/components';
 
 // ============================================================================
 // CLIENTS PAGE
@@ -102,7 +102,8 @@ export default function ClientsPage() {
         title="Clientes"
         description="Gestión de cartera de clientes"
         actions={
-          <Button icon={Plus} onClick={handleNew}>
+          <Button onClick={handleNew}>
+            <Plus className="h-4 w-4" />
             Nuevo Cliente
           </Button>
         }

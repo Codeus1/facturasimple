@@ -13,21 +13,21 @@ import {
   FileCheck,
   Loader2,
 } from "lucide-react";
-import { useInvoices, useNavigation, useMounted } from "@/src/hooks";
-import { InvoiceSchema, type InvoiceFormData } from "@/src/schemas";
+import { useInvoices, useNavigation, useMounted } from "@/hooks";
+import { InvoiceSchema, type InvoiceFormData } from "@/schemas";
 import {
   VAT_RATES,
   IRPF_RATE,
   DEFAULT_VAT_RATE,
   DEFAULT_DUE_DATE_OFFSET_MS,
-} from "@/src/constants";
+} from "@/constants";
 import {
   formatCurrency,
   formatDateForInput,
   generateId,
   calculateInvoiceTotals,
-} from "@/src/lib/utils";
-import { generateInvoicePDF } from "@/src/services";
+} from "@/lib/utils";
+import { generateInvoicePDF } from "@/services";
 import {
   Button,
   Input,
@@ -49,9 +49,9 @@ import {
   FormControl,
   FormMessage,
   Label,
-} from "@/src/components/ui";
-import { StatusBadge } from "@/src/components";
-import type { Invoice } from "@/src/types";
+} from "@/components/ui";
+import { StatusBadge } from "@/components";
+import type { Invoice } from "@/types";
 import { use } from "react";
 
 // ============================================================================
@@ -164,13 +164,20 @@ const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({ invoiceId }) => {
   return (
     <div className="max-w-4xl mx-auto pb-20 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <Button variant="ghost" icon={ArrowLeft} onClick={goBack}>Volver</Button>
+        <Button variant="ghost" onClick={goBack}>
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </Button>
         <div className="flex gap-2">
           {!isEditable && !isSubmitting && (
             <>
-              <Button variant="secondary" icon={Download} onClick={handleDownload} type="button">PDF</Button>
+              <Button variant="secondary" onClick={handleDownload} type="button">
+                <Download className="h-4 w-4" />
+                PDF
+              </Button>
               {status === "PENDING" && (
-                <Button variant="success" icon={CheckCircle} onClick={form.handleSubmit((d) => onSubmit(d, "PAID"))}>
+                <Button variant="default" className="bg-green-600 hover:bg-green-700" onClick={form.handleSubmit((d) => onSubmit(d, "PAID"))}>
+                  <CheckCircle className="h-4 w-4" />
                   Marcar Pagada
                 </Button>
               )}
@@ -178,10 +185,12 @@ const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({ invoiceId }) => {
           )}
           {isEditable && !isSubmitting && (
             <>
-              <Button variant="secondary" icon={Save} onClick={form.handleSubmit((d) => onSubmit(d, "DRAFT"))}>
+              <Button variant="secondary" onClick={form.handleSubmit((d) => onSubmit(d, "DRAFT"))}>
+                <Save className="h-4 w-4" />
                 Guardar
               </Button>
-              <Button variant="primary" icon={FileCheck} onClick={form.handleSubmit((d) => onSubmit(d, "PENDING"))}>
+              <Button onClick={form.handleSubmit((d) => onSubmit(d, "PENDING"))}>
+                <FileCheck className="h-4 w-4" />
                 Emitir
               </Button>
             </>
@@ -278,7 +287,10 @@ const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({ invoiceId }) => {
             </Table>
             {isEditable && (
               <div className="p-4 bg-muted/20 border-b border-border">
-                <Button type="button" variant="ghost" size="sm" icon={Plus} onClick={addItem}>Anadir Linea</Button>
+                <Button type="button" variant="ghost" size="sm" onClick={addItem}>
+                  <Plus className="h-4 w-4" />
+                  Añadir Línea
+                </Button>
                 {form.formState.errors.items && <p className="text-destructive text-xs mt-2">{form.formState.errors.items.message}</p>}
               </div>
             )}

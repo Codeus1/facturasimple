@@ -5,8 +5,8 @@
  */
 import { z } from 'zod';
 import { createJSONStorage } from 'zustand/middleware';
-import { APP_CONFIG } from '@/src/constants';
-import { clientSchema, invoiceSchema } from '@/src/domain/entities';
+import { APP_CONFIG } from '@/constants';
+import { clientSchema, invoiceSchema } from '@/domain/entities';
 
 const STORAGE_VERSION = APP_CONFIG.storageVersion ?? 1;
 

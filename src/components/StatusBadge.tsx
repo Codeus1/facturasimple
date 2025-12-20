@@ -1,6 +1,6 @@
 import React from 'react';
-import type { InvoiceStatus } from '@/src/types';
-import { INVOICE_STATUS } from '@/src/types';
+import type { InvoiceStatus } from '@/types';
+import { INVOICE_STATUS } from '@/types';
 
 // ============================================================================
 // STATUS BADGE COMPONENT

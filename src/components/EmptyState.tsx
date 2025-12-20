@@ -1,5 +1,5 @@
 import React from "react";
-import { TableRow, TableCell } from "@/src/components/ui";
+import { TableRow, TableCell } from "@/components/ui";
 
 interface EmptyStateProps {
   message: string;

@@ -2,10 +2,10 @@
  * Invoice repository backed by the Zustand store.
  * Keeps compatibility with current in-memory/localStorage model.
  */
-import type { InvoiceRepository } from '@/src/domain/repositories';
-import type { InvoiceEntity } from '@/src/domain/entities';
-import { parseInvoice } from '@/src/domain/entities';
-import { useAppStore } from '@/src/store';
+import type { InvoiceRepository } from '@/domain/repositories';
+import type { InvoiceEntity } from '@/domain/entities';
+import { parseInvoice } from '@/domain/entities';
+import { useAppStore } from '@/store';
 
 export const storeInvoiceRepository: InvoiceRepository = {
   async list(): Promise<InvoiceEntity[]> {

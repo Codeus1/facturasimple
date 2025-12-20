@@ -4,8 +4,8 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import { useAppStore, selectClients } from '@/src/store';
-import type { Client, ClientCreateInput } from '@/src/types';
+import { useAppStore, selectClients } from '@/store';
+import type { Client, ClientCreateInput } from '@/types';
 
 export function useClients() {
   const clients = useAppStore(selectClients);

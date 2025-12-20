@@ -1,7 +1,7 @@
 /**
  * Email sender that uses the mailto: protocol (client-side only).
  */
-import type { EmailSender, EmailMessage } from '@/src/domain/email';
+import type { EmailSender, EmailMessage } from '@/domain/email';
 
 function openMailto(message: EmailMessage): void {
   const params = new URLSearchParams();

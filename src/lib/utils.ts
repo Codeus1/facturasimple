@@ -4,7 +4,7 @@
  */
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { LOCALE, CURRENCY } from '@/src/constants';
+import { LOCALE, CURRENCY } from '@/constants';
 
 // ============================================================================
 // CLASS NAME UTILITIES (Tailwind)

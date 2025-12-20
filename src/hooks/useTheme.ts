@@ -4,7 +4,7 @@
  */
 
 import { useEffect } from 'react';
-import { useAppStore, selectTheme } from '@/src/store';
+import { useAppStore, selectTheme } from '@/store';
 
 export function useTheme() {
   const theme = useAppStore(selectTheme);

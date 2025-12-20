@@ -1,21 +1,28 @@
 'use client';
 
 import { ClientForm, ConfirmDialog, EmptyState, PageHeader, PageLoading } from '@/components';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { DialogHeader } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import {
+  Button,
+  Card,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Input,
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui';
 import { useClients, useMounted } from '@/hooks';
 import type { Client } from '@/types';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
 import { Edit2, Plus, Search, Table, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 

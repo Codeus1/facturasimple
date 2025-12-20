@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
-import React from 'react';
-import { Euro, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
-import { useAppStore } from '@/store';
-import { useMounted } from '@/hooks';
-import { Card, CardContent, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
-import { StatusBadge, Link, PageHeader, PageLoading, EmptyState } from '@/components';
-import { formatCurrency } from '@/lib/utils';
+import { EmptyState, Link, PageHeader, PageLoading, StatusBadge } from '@/components';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ROUTES } from '@/constants';
+import { useMounted } from '@/hooks';
+import { formatCurrency } from '@/lib/utils';
+import { useAppStore } from '@/store';
 import type { Invoice } from '@/types';
+import { AlertTriangle, ArrowRight, Clock, Euro, Table } from 'lucide-react';
+import React from 'react';
 
 // ============================================================================
 // DASHBOARD PAGE (Home)
@@ -23,16 +24,11 @@ export default function DashboardPage() {
     return <PageLoading message="Cargando datos..." />;
   }
 
-  const recentInvoices = [...invoices]
-    .sort((a, b) => b.issueDate - a.issueDate)
-    .slice(0, 5);
+  const recentInvoices = [...invoices].sort((a, b) => b.issueDate - a.issueDate).slice(0, 5);
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
-      <PageHeader
-        title="Dashboard"
-        description="Resumen de actividad reciente"
-      />
+      <PageHeader title="Dashboard" description="Resumen de actividad reciente" />
 
       <StatsGrid stats={stats} />
 
@@ -134,10 +130,7 @@ const RecentActivityCard: React.FC<RecentActivityCardProps> = ({ invoices }) => 
             invoices.map(inv => (
               <TableRow key={inv.id}>
                 <TableCell>
-                  <Link
-                    href={ROUTES.INVOICE_DETAIL(inv.id)}
-                    className="font-mono hover:underline"
-                  >
+                  <Link href={ROUTES.INVOICE_DETAIL(inv.id)} className="font-mono hover:underline">
                     {inv.invoiceNumber}
                   </Link>
                 </TableCell>

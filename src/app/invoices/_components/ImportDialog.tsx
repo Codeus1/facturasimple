@@ -1,17 +1,12 @@
 "use client";
 
-import React from 'react';
-import { AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { DialogFooter, DialogHeader } from '@/components/ui/dialog';
 import type { ImportResult } from '@/services';
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
+import { AlertCircle } from 'lucide-react';
+import React from 'react';
+
 
 // ============================================================================
 // TYPES

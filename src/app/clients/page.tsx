@@ -1,32 +1,23 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Trash2, Edit2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useClients, useMounted } from '@/hooks';
-import type { Client } from '@/types';
+import { ClientForm, ConfirmDialog, EmptyState, PageHeader, PageLoading } from '@/components';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { DialogHeader } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import {
-  Button,
-  Input,
-  Card,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui';
-import { ClientForm, PageHeader, PageLoading, EmptyState, ConfirmDialog } from '@/components';
+} from '@/components/ui/pagination';
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useClients, useMounted } from '@/hooks';
+import type { Client } from '@/types';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
+import { Edit2, Plus, Search, Table, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 // ============================================================================
 // CLIENTS PAGE
@@ -111,28 +102,28 @@ export default function ClientsPage() {
 
       <Card>
         <SearchBar value={search} onChange={setSearch} />
-        <ClientsTable
-          clients={paginatedClients}
-          onEdit={handleEdit}
-          onDelete={handleDeleteClick}
-        />
-        
+        <ClientsTable clients={paginatedClients} onEdit={handleEdit} onDelete={handleDeleteClick} />
+
         {/* Pagination Controls */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-4 border-t border-border">
             <div className="text-sm text-muted-foreground">
-              Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredClients.length)} de {filteredClients.length} clientes
+              Mostrando {(currentPage - 1) * itemsPerPage + 1} a{' '}
+              {Math.min(currentPage * itemsPerPage, filteredClients.length)} de{' '}
+              {filteredClients.length} clientes
             </div>
-            
+
             <Pagination className="w-auto mx-0">
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious 
+                  <PaginationPrevious
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    className={
+                      currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                    }
                   />
                 </PaginationItem>
-                
+
                 <PaginationItem>
                   <span className="text-sm font-medium px-4">
                     Página {currentPage} de {totalPages}
@@ -140,9 +131,13 @@ export default function ClientsPage() {
                 </PaginationItem>
 
                 <PaginationItem>
-                  <PaginationNext 
+                  <PaginationNext
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    className={
+                      currentPage === totalPages
+                        ? 'pointer-events-none opacity-50'
+                        : 'cursor-pointer'
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>
@@ -157,7 +152,9 @@ export default function ClientsPage() {
           <DialogHeader>
             <DialogTitle>{editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
             <DialogDescription>
-              {editingClient ? 'Modifica los datos del cliente.' : 'Introduce los datos del nuevo cliente.'}
+              {editingClient
+                ? 'Modifica los datos del cliente.'
+                : 'Introduce los datos del nuevo cliente.'}
             </DialogDescription>
           </DialogHeader>
           <ClientForm
@@ -229,12 +226,7 @@ const ClientsTable: React.FC<ClientsTableProps> = ({ clients, onEdit, onDelete }
         <EmptyState message="No hay clientes" colSpan={4} />
       ) : (
         clients.map(client => (
-          <ClientRow
-            key={client.id}
-            client={client}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
+          <ClientRow key={client.id} client={client} onEdit={onEdit} onDelete={onDelete} />
         ))
       )}
     </TableBody>

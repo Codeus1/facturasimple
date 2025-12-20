@@ -5,7 +5,7 @@ import { LayoutDashboard, Users, FileText, Menu, X, Sun, Moon } from 'lucide-rea
 import { useNavigation, useTheme, useMounted } from '@/hooks';
 import { ROUTES } from '@/constants';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 import { Link } from '@/components/Link';
 
 // ============================================================================

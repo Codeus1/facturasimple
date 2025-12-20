@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { ClientSchema, ClientFormData } from '@/schemas';
+import { Button } from '@/components/ui/button';
 import {
-  Button,
-  Input,
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-} from '@/components/ui';
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { ClientFormData, ClientSchema } from '@/schemas';
 import type { Client } from '@/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 
 // ============================================================================
 // CLIENT FORM COMPONENT
@@ -116,16 +116,11 @@ export const ClientForm: React.FC<ClientFormProps> = ({ client, onSave, onCancel
         />
 
         <div className="flex gap-3 pt-4">
-          <Button
-            type="button"
-            variant="secondary"
-            className="w-full"
-            onClick={onCancel}
-          >
+          <Button type="button" variant="secondary" className="w-full" onClick={onCancel}>
             Cancelar
           </Button>
           <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Guardando..." : "Guardar Cliente"}
+            {form.formState.isSubmitting ? 'Guardando...' : 'Guardar Cliente'}
           </Button>
         </div>
       </form>

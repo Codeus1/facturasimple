@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { generateId } from '@/lib/utils';
 import { ClientFormData, ClientSchema } from '@/schemas';
 import type { Client } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -47,7 +48,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ client, onSave, onCancel
 
   const onSubmit = (data: ClientFormData) => {
     onSave({
-      id: client?.id || crypto.randomUUID(),
+      id: client?.id || generateId(),
       createdAt: client?.createdAt || Date.now(),
       name: data.name,
       nif: data.nif,

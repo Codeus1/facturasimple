@@ -2,13 +2,13 @@
 
 import { EmptyState, Link, PageHeader, PageLoading, StatusBadge } from '@/components';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ROUTES } from '@/constants';
 import { useMounted } from '@/hooks';
 import { formatCurrency } from '@/lib/utils';
 import { useAppStore } from '@/store';
 import type { Invoice } from '@/types';
-import { AlertTriangle, ArrowRight, Clock, Euro, Table } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Clock, Euro } from 'lucide-react';
 import React from 'react';
 
 // ============================================================================

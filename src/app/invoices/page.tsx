@@ -20,7 +20,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { SimpleSelect } from '@/components/ui/simple-select';
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ROUTES } from '@/constants';
 import type { InvoiceSearchFilters } from '@/hooks';
 import {
@@ -54,7 +54,6 @@ import {
   Mail,
   Plus,
   Search,
-  Table,
   Trash2,
   Upload,
   X,

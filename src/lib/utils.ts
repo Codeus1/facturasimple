@@ -50,7 +50,22 @@ export function parseInputDate(dateString: string): number {
 // ============================================================================
 
 export function generateId(): string {
-  return crypto.randomUUID();
+  const cryptoObj = typeof crypto !== 'undefined' ? crypto : undefined;
+
+  if (cryptoObj) {
+    if (typeof cryptoObj.randomUUID === 'function') {
+      return cryptoObj.randomUUID();
+    }
+
+    if (typeof cryptoObj.getRandomValues === 'function') {
+      const bytes = cryptoObj.getRandomValues(new Uint8Array(16));
+      return Array.from(bytes)
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('');
+    }
+  }
+
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
 // ============================================================================

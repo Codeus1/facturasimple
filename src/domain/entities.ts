@@ -4,13 +4,19 @@
  */
 import { z } from 'zod';
 
+const DEFAULT_TENANT = 'public';
+const SYSTEM_USER = 'system';
+
 export const clientSchema = z.object({
   id: z.string().min(1, 'Client id is required'),
   name: z.string().min(1, 'Client name is required'),
   nif: z.string().min(3, 'NIF is too short'),
   address: z.string().min(1, 'Address is required'),
   email: z.string().email('Email no válido'),
-  createdAt: z.number().int().nonnegative(),
+  tenantId: z.string().min(1).default(DEFAULT_TENANT),
+  ownerId: z.string().min(1).default(SYSTEM_USER),
+  createdAt: z.number().int().nonnegative().default(() => Date.now()),
+  updatedAt: z.number().int().nonnegative().optional(),
 });
 
 export type ClientEntity = z.infer<typeof clientSchema>;
@@ -39,6 +45,10 @@ export const invoiceSchema = z.object({
   irpfRate: z.number(),
   irpfAmount: z.number(),
   totalAmount: z.number(),
+  tenantId: z.string().min(1).default(DEFAULT_TENANT),
+  ownerId: z.string().min(1).default(SYSTEM_USER),
+  createdAt: z.number().int().nonnegative().default(() => Date.now()),
+  updatedAt: z.number().int().nonnegative().optional(),
 });
 
 export type InvoiceEntity = z.infer<typeof invoiceSchema>;

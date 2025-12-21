@@ -27,6 +27,7 @@ import {
   countActiveFilters,
   DEFAULT_FILTERS,
   useDebounce,
+  useAuth,
   useInvoices,
   useInvoiceSearch,
   useMounted,
@@ -59,6 +60,7 @@ import {
   X,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ImportDialog } from './_components/ImportDialog';
 
 // ============================================================================
@@ -70,6 +72,8 @@ export default function InvoicesPage() {
   const { sortedInvoices, markAsPaid, getClientById, clients, saveInvoice, remove, cancel } =
     useInvoices();
   const { goToNewInvoice } = useNavigation();
+  const { loading, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   // Search & Filter State
   const [filters, setFilters] = useState<InvoiceSearchFilters>(DEFAULT_FILTERS);
@@ -79,6 +83,16 @@ export default function InvoicesPage() {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, loading, router]);
+
+  if (!mounted || loading) {
+    return <PageLoading message="Cargando facturas..." />;
+  }
 
   // Apply debounced search
   const searchFilters = { ...filters, query: debouncedQuery };

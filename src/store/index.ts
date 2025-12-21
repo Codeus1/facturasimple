@@ -114,9 +114,12 @@ export const useAppStore = create<AppStore>()(
       // ------------------------------------------------------------------
       addClient: (clientData) => {
         const client: Client = {
+          tenantId: clientData.tenantId,
+          ownerId: clientData.ownerId,
           ...clientData,
           id: generateId(),
-          createdAt: Date.now(),
+          createdAt: clientData.createdAt ?? Date.now(),
+          updatedAt: Date.now(),
         };
         set(state => ({
           clients: [...state.clients, client],
@@ -126,7 +129,7 @@ export const useAppStore = create<AppStore>()(
 
       updateClient: (client) => {
         set(state => ({
-          clients: updateById(state.clients, client),
+          clients: updateById(state.clients, { ...client, updatedAt: Date.now() }),
         }));
       },
 
@@ -143,9 +146,20 @@ export const useAppStore = create<AppStore>()(
         set(state => {
           const exists = state.invoices.some(i => i.id === invoice.id);
           if (exists) {
-            return { invoices: updateById(state.invoices, invoice) };
+            return { invoices: updateById(state.invoices, { ...invoice, updatedAt: Date.now() }) };
           }
-          return { invoices: [...state.invoices, invoice] };
+          return {
+            invoices: [
+              ...state.invoices,
+              {
+                ...invoice,
+                tenantId: invoice.tenantId,
+                ownerId: invoice.ownerId,
+                createdAt: invoice.createdAt ?? Date.now(),
+                updatedAt: Date.now(),
+              },
+            ],
+          };
         });
       },
 
@@ -153,6 +167,8 @@ export const useAppStore = create<AppStore>()(
         const invoice: Invoice = {
           ...invoiceData,
           id: generateId(),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         };
         set(state => ({
           invoices: [...state.invoices, invoice],

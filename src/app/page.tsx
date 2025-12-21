@@ -4,12 +4,12 @@ import { EmptyState, Link, PageHeader, PageLoading, StatusBadge } from '@/compon
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ROUTES } from '@/constants';
-import { useMounted } from '@/hooks';
+import { useAuth, useMounted, useInvoices } from '@/hooks';
 import { formatCurrency } from '@/lib/utils';
-import { useAppStore } from '@/store';
 import type { Invoice } from '@/types';
 import { AlertTriangle, ArrowRight, Clock, Euro } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 // ============================================================================
 // DASHBOARD PAGE (Home)
@@ -17,13 +17,21 @@ import React from 'react';
 
 export default function DashboardPage() {
   const mounted = useMounted();
-  const stats = useAppStore(state => state.getDashboardStats());
-  const invoices = useAppStore(state => state.invoices);
+  const { invoices } = useInvoices();
+  const { loading, isAuthenticated } = useAuth();
+  const router = useRouter();
 
-  if (!mounted) {
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, loading, router]);
+
+  if (!mounted || loading) {
     return <PageLoading message="Cargando datos..." />;
   }
 
+  const stats = calculateDashboardStats(invoices);
   const recentInvoices = [...invoices].sort((a, b) => b.issueDate - a.issueDate).slice(0, 5);
 
   return (
@@ -147,3 +155,29 @@ const RecentActivityCard: React.FC<RecentActivityCardProps> = ({ invoices }) => 
     </CardContent>
   </Card>
 );
+
+function calculateDashboardStats(invoices: Invoice[]) {
+  const now = Date.now();
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  return invoices.reduce(
+    (acc, inv) => {
+      const invDate = new Date(inv.issueDate);
+      const invMonth = invDate.getMonth();
+      const invYear = invDate.getFullYear();
+
+      if (inv.status === 'PAID' && invMonth === currentMonth && invYear === currentYear) {
+        acc.incomeMonth += inv.totalAmount;
+      }
+      if (inv.status === 'PENDING') {
+        acc.pendingAmount += inv.totalAmount;
+      }
+      if ((inv.status === 'PENDING' || inv.status === 'OVERDUE') && inv.dueDate < now) {
+        acc.overdueCount++;
+      }
+      return acc;
+    },
+    { incomeMonth: 0, pendingAmount: 0, overdueCount: 0 }
+  );
+}

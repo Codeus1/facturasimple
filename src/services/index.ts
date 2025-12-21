@@ -5,3 +5,4 @@ export { parseInvoicesFromCSV } from './csvImporter';
 export type { ImportResult, ImportOptions } from './csvImporter';
 export { sendInvoiceEmail, canSendEmail, openEmailClient } from './emailService';
 export type { EmailOptions, InvoiceEmailData } from './emailService';
+export { recordAudit, listAuditTrail } from './auditTrail';

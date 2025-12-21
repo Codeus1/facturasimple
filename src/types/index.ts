@@ -13,10 +13,13 @@ export interface Client {
   nif: string;
   address: string;
   email: string;
+  tenantId: string;
+  ownerId: string;
   readonly createdAt: number;
+  readonly updatedAt?: number;
 }
 
-export type ClientCreateInput = Omit<Client, 'id' | 'createdAt'>;
+export type ClientCreateInput = Omit<Client, 'id' | 'createdAt' | 'updatedAt'>;
 export type ClientUpdateInput = Partial<ClientCreateInput> & { id: string };
 
 // ============================================================================
@@ -57,6 +60,10 @@ export interface Invoice {
   irpfRate: number;
   irpfAmount: number;
   totalAmount: number;
+  tenantId: string;
+  ownerId: string;
+  readonly createdAt: number;
+  readonly updatedAt?: number;
 }
 
 export type InvoiceCreateInput = Omit<Invoice, 'id'>;

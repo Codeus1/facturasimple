@@ -13,7 +13,7 @@ import {
   FileCheck,
   Loader2,
 } from 'lucide-react';
-import { useInvoices, useNavigation, useMounted } from '@/hooks';
+import { useInvoices, useNavigation, useMounted, useAuth } from '@/hooks';
 import { InvoiceSchema, type InvoiceFormData } from '@/schemas';
 import { VAT_RATES, IRPF_RATE, DEFAULT_VAT_RATE, DEFAULT_DUE_DATE_OFFSET_MS } from '@/constants';
 import {
@@ -46,7 +46,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { StatusBadge } from '@/components';
 import type { Invoice } from '@/types';
-import { use } from 'react';
+import { useRouter } from 'next/navigation';
 
 // ============================================================================
 // Invoice Form Page Component
@@ -61,11 +61,19 @@ const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({ invoiceId }) => {
   const { goToInvoices, goBack } = useNavigation();
   const { clients, getInvoiceById, getNextInvoiceNumber, saveInvoice, getClientById } =
     useInvoices();
+  const { loading, isAuthenticated, tenantId, userId } = useAuth();
+  const router = useRouter();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isNew = invoiceId === 'new';
   const existingInvoice = isNew ? undefined : getInvoiceById(invoiceId);
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, loading, router]);
 
   const form = useForm<InvoiceFormData>({
     resolver: zodResolver(InvoiceSchema),
@@ -126,6 +134,10 @@ const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({ invoiceId }) => {
       status: targetStatus === 'DRAFT' && data.status !== 'DRAFT' ? data.status : targetStatus,
       clientName: client?.name,
       items: data.items.map(i => ({ ...i, subtotal: i.quantity * i.priceUnit })),
+      tenantId,
+      ownerId: existingInvoice?.ownerId || userId,
+      createdAt: existingInvoice?.createdAt ?? Date.now(),
+      updatedAt: Date.now(),
     };
     saveInvoice(finalInvoice);
     if (targetStatus === 'PENDING' && client) {
@@ -145,7 +157,7 @@ const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({ invoiceId }) => {
     append({ id: generateId(), description: '', quantity: 1, priceUnit: 0, subtotal: 0 });
   };
 
-  if (!mounted) return <div className="p-8 text-muted-foreground">Cargando factura...</div>;
+  if (!mounted || loading) return <div className="p-8 text-muted-foreground">Cargando factura...</div>;
 
   const status = form.watch('status');
   const isEditable = isNew || status === 'DRAFT';

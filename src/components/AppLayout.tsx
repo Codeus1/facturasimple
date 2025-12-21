@@ -1,12 +1,13 @@
 "use client";
 
 import React from 'react';
-import { LayoutDashboard, Users, FileText, Menu, X, Sun, Moon } from 'lucide-react';
-import { useNavigation, useTheme, useMounted } from '@/hooks';
+import { LayoutDashboard, Users, FileText, Menu, X, Sun, Moon, LogOut } from 'lucide-react';
+import { useNavigation, useTheme, useMounted, useAuth } from '@/hooks';
 import { ROUTES } from '@/constants';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/components/Link';
+import { usePathname, useRouter } from 'next/navigation';
 
 // ============================================================================
 // NAV ITEM COMPONENT
@@ -54,6 +55,9 @@ interface MainLayoutProps {
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { theme, toggleTheme } = useTheme();
   const mounted = useMounted();
+  const { session, isAuthenticated, signOut, loading } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
@@ -66,6 +70,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </div>
     );
   }
+
+  if (pathname?.startsWith('/login')) {
+    return <main className="min-h-screen bg-background">{children}</main>;
+  }
+
+  const handleLogout = async () => {
+    await signOut();
+    router.replace('/login');
+  };
 
   return (
     <div className="min-h-screen bg-background flex text-foreground">
@@ -87,6 +100,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </nav>
 
         <div className="p-4 border-t border-border">
+          <div className="text-xs text-muted-foreground mb-2">
+            {loading ? 'Validando sesión...' : session?.email}
+          </div>
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 mb-2"
+            onClick={handleLogout}
+            disabled={!isAuthenticated && !loading}
+          >
+            <LogOut size={18} />
+            <span>Salir</span>
+          </Button>
           <Button
             variant="ghost"
             className="w-full justify-start gap-3"
@@ -137,6 +162,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               />
             </nav>
             <div className="mt-8 pt-4 border-t border-border">
+              <div className="text-xs text-muted-foreground mb-3">
+                {loading ? 'Validando sesión...' : session?.email}
+              </div>
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-3 mb-2"
+                onClick={handleLogout}
+                disabled={!isAuthenticated && !loading}
+              >
+                <LogOut size={18} />
+                <span>Salir</span>
+              </Button>
               <Button
                 variant="outline"
                 className="w-full justify-start gap-3"

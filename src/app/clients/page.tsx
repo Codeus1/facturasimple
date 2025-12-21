@@ -26,10 +26,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
-import { useClients, useMounted } from '@/hooks';
+import { useAuth, useClients, useMounted } from '@/hooks';
 import type { Client } from '@/types';
 import { Edit2, Plus, Search, Table as TableIcon, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 // ============================================================================
 // CLIENTS PAGE
@@ -38,6 +39,8 @@ import React, { useEffect, useState } from 'react';
 export default function ClientsPage() {
   const mounted = useMounted();
   const { clients, searchClients, saveClient, updateClient, deleteClient } = useClients();
+  const { loading, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,7 +56,13 @@ export default function ClientsPage() {
     setCurrentPage(1);
   }, [search]);
 
-  if (!mounted) {
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, loading, router]);
+
+  if (!mounted || loading) {
     return <PageLoading message="Cargando clientes..." />;
   }
 

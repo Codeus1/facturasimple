@@ -44,6 +44,9 @@ export interface InvoiceItem {
 export interface Invoice {
   readonly id: string;
   invoiceNumber: string;
+  series: string;
+  fiscalYear: number;
+  sequence: number;
   clientId: string;
   clientName?: string; // Denormalized for list views
   issueDate: number;
@@ -57,9 +60,23 @@ export interface Invoice {
   irpfRate: number;
   irpfAmount: number;
   totalAmount: number;
+  createdAt: number;
+  updatedAt: number;
+  statusChangedAt?: number;
 }
 
-export type InvoiceCreateInput = Omit<Invoice, 'id'>;
+export type InvoiceCreateInput = Omit<
+  Invoice,
+  'id' | 'invoiceNumber' | 'sequence' | 'createdAt' | 'updatedAt' | 'statusChangedAt' | 'fiscalYear'
+> & {
+  id?: string;
+  invoiceNumber?: string;
+  sequence?: number;
+  fiscalYear?: number;
+  createdAt?: number;
+  updatedAt?: number;
+  statusChangedAt?: number;
+};
 
 // ============================================================================
 // DASHBOARD / KPI

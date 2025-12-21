@@ -11,8 +11,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Client, Invoice, InvoiceStatus, Theme, KPIStats } from '@/types';
-import { APP_CONFIG, ROUTES } from '@/constants';
-import { generateId, generateInvoiceNumber, updateById, removeById } from '@/lib/utils';
+import { APP_CONFIG, DEFAULT_FISCAL_SERIES, ROUTES } from '@/constants';
+import {
+  generateId,
+  generateInvoiceNumber,
+  getFiscalYearFromDate,
+  updateById,
+  removeById,
+} from '@/lib/utils';
 import { validatedStorage } from '@/data/persistence/storage';
 
 // ============================================================================
@@ -50,7 +56,7 @@ interface AppActions {
   deleteInvoice: (id: string) => boolean; // Returns false if invoice is not a draft
   
   // Selectors (computed)
-  getNextInvoiceNumber: () => string;
+  getNextInvoiceNumber: (issueDate?: number) => string;
   getClientById: (id: string) => Client | undefined;
   getInvoiceById: (id: string) => Invoice | undefined;
   getDashboardStats: () => KPIStats;
@@ -142,17 +148,56 @@ export const useAppStore = create<AppStore>()(
       saveInvoice: (invoice) => {
         set(state => {
           const exists = state.invoices.some(i => i.id === invoice.id);
+          const now = Date.now();
           if (exists) {
-            return { invoices: updateById(state.invoices, invoice) };
+            const current = state.invoices.find(i => i.id === invoice.id)!;
+            if (current.status !== 'DRAFT') {
+              return { invoices: state.invoices };
+            }
+            const stamped: Invoice = {
+              ...invoice,
+              series: invoice.series ?? current.series ?? DEFAULT_FISCAL_SERIES,
+              fiscalYear:
+                invoice.fiscalYear ?? current.fiscalYear ?? getFiscalYearFromDate(invoice.issueDate ?? Date.now()),
+              sequence: invoice.sequence ?? current.sequence,
+              createdAt: current.createdAt ?? invoice.createdAt ?? now,
+              updatedAt: now,
+              statusChangedAt:
+                invoice.status !== current.status ? now : current.statusChangedAt ?? invoice.statusChangedAt,
+            };
+            return { invoices: updateById(state.invoices, stamped) };
           }
-          return { invoices: [...state.invoices, invoice] };
+          const created: Invoice = {
+            ...invoice,
+            series: invoice.series ?? DEFAULT_FISCAL_SERIES,
+            fiscalYear: invoice.fiscalYear ?? getFiscalYearFromDate(invoice.issueDate ?? now),
+            sequence: invoice.sequence ?? 0,
+            createdAt: invoice.createdAt ?? now,
+            updatedAt: now,
+            statusChangedAt: invoice.statusChangedAt ?? (invoice.status !== 'DRAFT' ? now : undefined),
+          };
+          return { invoices: [...state.invoices, created] };
         });
       },
 
       createInvoice: (invoiceData) => {
+        const now = Date.now();
+        const fiscalYear = getFiscalYearFromDate(invoiceData.issueDate ?? now);
+        const series = invoiceData.series ?? DEFAULT_FISCAL_SERIES;
+        const existingNumbers = get()
+          .invoices.filter(inv => (inv.series || DEFAULT_FISCAL_SERIES) === series)
+          .map(inv => inv.invoiceNumber);
+        const { invoiceNumber, sequence } = generateInvoiceNumber(existingNumbers, series, fiscalYear);
         const invoice: Invoice = {
           ...invoiceData,
           id: generateId(),
+          series,
+          fiscalYear,
+          sequence,
+          invoiceNumber,
+          createdAt: now,
+          updatedAt: now,
+          statusChangedAt: invoiceData.status !== 'DRAFT' ? now : undefined,
         };
         set(state => ({
           invoices: [...state.invoices, invoice],
@@ -163,7 +208,14 @@ export const useAppStore = create<AppStore>()(
       updateInvoiceStatus: (id, status) => {
         set(state => ({
           invoices: state.invoices.map(inv =>
-            inv.id === id ? { ...inv, status } : inv
+            inv.id === id
+              ? {
+                  ...inv,
+                  status,
+                  updatedAt: Date.now(),
+                  statusChangedAt: inv.status !== status ? Date.now() : inv.statusChangedAt,
+                }
+              : inv
           ),
         }));
       },
@@ -171,7 +223,14 @@ export const useAppStore = create<AppStore>()(
       cancelInvoice: (id) => {
         set(state => ({
           invoices: state.invoices.map(inv =>
-            inv.id === id ? { ...inv, status: 'CANCELLED' as InvoiceStatus } : inv
+            inv.id === id
+              ? {
+                  ...inv,
+                  status: 'CANCELLED' as InvoiceStatus,
+                  updatedAt: Date.now(),
+                  statusChangedAt: inv.status !== 'CANCELLED' ? Date.now() : inv.statusChangedAt,
+                }
+              : inv
           ),
         }));
       },
@@ -191,10 +250,13 @@ export const useAppStore = create<AppStore>()(
       // ------------------------------------------------------------------
       // SELECTORS (Computed values - not persisted)
       // ------------------------------------------------------------------
-      getNextInvoiceNumber: () => {
+      getNextInvoiceNumber: (issueDate) => {
         const { invoices } = get();
-        const numbers = invoices.map(i => i.invoiceNumber);
-        return generateInvoiceNumber(numbers);
+        const fiscalYear = getFiscalYearFromDate(issueDate ?? Date.now());
+        const numbers = invoices
+          .filter(inv => (inv.series || DEFAULT_FISCAL_SERIES) === DEFAULT_FISCAL_SERIES)
+          .map(i => i.invoiceNumber);
+        return generateInvoiceNumber(numbers, DEFAULT_FISCAL_SERIES, fiscalYear).invoiceNumber;
       },
 
       getClientById: (id) => {

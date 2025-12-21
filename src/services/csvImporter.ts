@@ -5,8 +5,8 @@
 
 import Papa from 'papaparse';
 import type { Invoice, InvoiceItem, InvoiceStatus } from '@/types';
-import { generateId } from '@/lib/utils';
-import { DEFAULT_DUE_DATE_OFFSET_MS } from '@/constants';
+import { generateId, getFiscalYearFromDate, parseInvoiceNumber } from '@/lib/utils';
+import { DEFAULT_DUE_DATE_OFFSET_MS, DEFAULT_FISCAL_SERIES } from '@/constants';
 
 // ============================================================================
 // TYPES
@@ -356,9 +356,17 @@ function processCSVData(
       ];
 
       // Crear factura
+      const numberParts = parseInvoiceNumber(invoiceNumber, DEFAULT_FISCAL_SERIES);
+      const fiscalYear = numberParts?.fiscalYear ?? getFiscalYearFromDate(issueDate);
+      const series = numberParts?.series ?? DEFAULT_FISCAL_SERIES;
+      const sequence = numberParts?.sequence ?? 0;
+      const now = Date.now();
       const invoice: Invoice = {
         id: generateId(),
         invoiceNumber,
+        series,
+        fiscalYear,
+        sequence,
         clientId: clientId || '',
         clientName: clientName || '',
         issueDate,
@@ -371,6 +379,8 @@ function processCSVData(
         irpfRate,
         irpfAmount,
         totalAmount,
+        createdAt: now,
+        updatedAt: now,
       };
 
       invoices.push(invoice);

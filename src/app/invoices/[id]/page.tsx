@@ -15,12 +15,19 @@ import {
 } from 'lucide-react';
 import { useInvoices, useNavigation, useMounted } from '@/hooks';
 import { InvoiceSchema, type InvoiceFormData } from '@/schemas';
-import { VAT_RATES, IRPF_RATE, DEFAULT_VAT_RATE, DEFAULT_DUE_DATE_OFFSET_MS } from '@/constants';
+import {
+  VAT_RATES,
+  IRPF_RATE,
+  DEFAULT_VAT_RATE,
+  DEFAULT_DUE_DATE_OFFSET_MS,
+  DEFAULT_FISCAL_SERIES,
+} from '@/constants';
 import {
   formatCurrency,
   formatDateForInput,
   generateId,
   calculateInvoiceTotals,
+  getFiscalYearFromDate,
 } from '@/lib/utils';
 import { generateInvoicePDF } from '@/services';
 import { Button } from '@/components/ui/button';
@@ -81,6 +88,12 @@ const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({ invoiceId }) => {
       totalAmount: 0,
       issueDate: Date.now(),
       dueDate: Date.now() + DEFAULT_DUE_DATE_OFFSET_MS,
+      series: DEFAULT_FISCAL_SERIES,
+      fiscalYear: getFiscalYearFromDate(Date.now()),
+      sequence: 0,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      statusChangedAt: undefined,
     },
   });
 
@@ -89,19 +102,34 @@ const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({ invoiceId }) => {
     name: 'items',
   });
 
-  useEffect(() => {
-    if (!mounted) return;
-    if (isNew) {
-      form.setValue('invoiceNumber', getNextInvoiceNumber());
-    } else if (existingInvoice) {
-      form.reset(existingInvoice);
-    }
-  }, [mounted, isNew, existingInvoice, form, getNextInvoiceNumber]);
-
   const items = useWatch({ control: form.control, name: 'items' });
   const vatRate = useWatch({ control: form.control, name: 'vatRate' });
   const irpfRate = useWatch({ control: form.control, name: 'irpfRate' });
   const taxesIncluded = useWatch({ control: form.control, name: 'taxesIncluded' });
+  const issueDate = useWatch({ control: form.control, name: 'issueDate' });
+
+  useEffect(() => {
+    if (!mounted || !existingInvoice) return;
+    form.reset(existingInvoice);
+  }, [mounted, existingInvoice, form]);
+
+  useEffect(() => {
+    if (!mounted || existingInvoice) return;
+    form.setValue('invoiceNumber', getNextInvoiceNumber(issueDate));
+    form.setValue('fiscalYear', getFiscalYearFromDate(issueDate));
+    form.setValue('series', DEFAULT_FISCAL_SERIES);
+  }, [mounted, existingInvoice, form, getNextInvoiceNumber, issueDate]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const currentStatus = form.getValues('status');
+    if (!isNew && currentStatus !== 'DRAFT') return;
+    const targetFiscalYear = getFiscalYearFromDate(issueDate);
+    if (form.getValues('fiscalYear') !== targetFiscalYear) {
+      form.setValue('invoiceNumber', getNextInvoiceNumber(issueDate));
+      form.setValue('fiscalYear', targetFiscalYear);
+    }
+  }, [mounted, isNew, issueDate, form, getNextInvoiceNumber]);
 
   useEffect(() => {
     if (!items) return;
@@ -119,26 +147,54 @@ const InvoiceFormPage: React.FC<InvoiceFormPageProps> = ({ invoiceId }) => {
 
   const onSubmit = async (data: InvoiceFormData, targetStatus: 'DRAFT' | 'PENDING' | 'PAID') => {
     setIsSubmitting(true);
-    const client = getClientById(data.clientId);
-    const finalInvoice: Invoice = {
-      ...data,
-      id: isNew ? generateId() : invoiceId,
-      status: targetStatus === 'DRAFT' && data.status !== 'DRAFT' ? data.status : targetStatus,
-      clientName: client?.name,
-      items: data.items.map(i => ({ ...i, subtotal: i.quantity * i.priceUnit })),
-    };
-    saveInvoice(finalInvoice);
-    if (targetStatus === 'PENDING' && client) {
-      generateInvoicePDF(finalInvoice, client);
+    try {
+      const client = getClientById(data.clientId);
+      const now = Date.now();
+      const fiscalYear = getFiscalYearFromDate(data.issueDate);
+      const finalInvoice: Invoice = {
+        ...data,
+        id: isNew ? generateId() : invoiceId,
+        series: data.series || DEFAULT_FISCAL_SERIES,
+        fiscalYear,
+        sequence: data.sequence ?? 0,
+        createdAt: existingInvoice?.createdAt ?? data.createdAt ?? now,
+        updatedAt: now,
+        statusChangedAt:
+          data.status !== existingInvoice?.status
+            ? now
+            : existingInvoice?.statusChangedAt ?? data.statusChangedAt,
+        status: targetStatus === 'DRAFT' && data.status !== 'DRAFT' ? data.status : targetStatus,
+        clientName: client?.name,
+        items: data.items.map(i => ({ ...i, subtotal: i.quantity * i.priceUnit })),
+      };
+      await saveInvoice(finalInvoice);
+      if (targetStatus === 'PENDING' && client) {
+        generateInvoicePDF(finalInvoice, client);
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+      goToInvoices();
+    } catch (error) {
+      console.error('Error al guardar la factura', error);
+    } finally {
+      setIsSubmitting(false);
     }
-    await new Promise(resolve => setTimeout(resolve, 100));
-    goToInvoices();
   };
 
   const handleDownload = () => {
     const data = form.getValues();
     const client = getClientById(data.clientId);
-    if (client) generateInvoicePDF({ ...data, id: invoiceId } as Invoice, client);
+    if (!client) return;
+    const invoiceForPdf: Invoice =
+      existingInvoice ?? {
+        ...data,
+        id: invoiceId,
+        series: data.series || DEFAULT_FISCAL_SERIES,
+        fiscalYear: data.fiscalYear ?? getFiscalYearFromDate(data.issueDate),
+        sequence: data.sequence ?? 0,
+        createdAt: data.createdAt ?? Date.now(),
+        updatedAt: data.updatedAt ?? Date.now(),
+      };
+    generateInvoicePDF(invoiceForPdf, client);
   };
 
   const addItem = () => {

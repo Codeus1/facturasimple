@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { DEFAULT_FISCAL_SERIES, MAX_PAYMENT_TERM_DAYS } from '@/constants';
+import { getFiscalYearFromDate, isPaymentTermValid, parseInvoiceNumber } from '@/lib/utils';
 
 // ============================================================================
 // CLIENT SCHEMAS
@@ -34,6 +36,9 @@ export const InvoiceItemSchema = z.object({
 export const InvoiceSchema = z.object({
   id: z.string().optional(),
   invoiceNumber: z.string().min(1, 'Número de factura requerido'),
+  series: z.string().min(1).optional().default(DEFAULT_FISCAL_SERIES),
+  fiscalYear: z.number().int().optional(),
+  sequence: z.number().int().optional(),
   clientId: z.string().min(1, 'Debes seleccionar un cliente'),
   issueDate: z.number(),
   dueDate: z.number(),
@@ -48,6 +53,35 @@ export const InvoiceSchema = z.object({
   irpfRate: z.number().min(0).max(1),
   irpfAmount: z.number(),
   totalAmount: z.number(),
+  createdAt: z.number().optional(),
+  updatedAt: z.number().optional(),
+  statusChangedAt: z.number().optional(),
+}).superRefine((data, ctx) => {
+  const now = Date.now();
+  if (data.issueDate > now) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['issueDate'],
+      message: 'La fecha de emisión no puede ser futura',
+    });
+  }
+  if (!isPaymentTermValid(data.issueDate, data.dueDate, MAX_PAYMENT_TERM_DAYS)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['dueDate'],
+      message: `El vencimiento debe ser posterior a la emisión y no superar ${MAX_PAYMENT_TERM_DAYS} días`,
+    });
+  }
+
+  const parsed = parseInvoiceNumber(data.invoiceNumber, data.series);
+  const fiscalYear = data.fiscalYear ?? getFiscalYearFromDate(data.issueDate);
+  if (parsed && parsed.fiscalYear !== fiscalYear) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['invoiceNumber'],
+      message: 'La serie/año de la factura debe coincidir con la fecha de emisión',
+    });
+  }
 });
 
 export type InvoiceFormData = z.infer<typeof InvoiceSchema>;

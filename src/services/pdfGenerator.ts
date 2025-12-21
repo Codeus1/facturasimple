@@ -22,6 +22,13 @@ const TEXT_COLOR = 40;
 
 export function generateInvoicePDF(invoice: Invoice, client: Client): void {
   const doc = new jsPDF();
+  doc.setProperties({
+    title: `Factura ${invoice.invoiceNumber}`,
+    subject: `Serie ${invoice.series} / Año ${invoice.fiscalYear}`,
+    author: ISSUER_INFO.name,
+    creator: ISSUER_INFO.name,
+    keywords: [`NIF ${ISSUER_INFO.nif}`, invoice.series, `Año ${invoice.fiscalYear}`].join(', '),
+  });
 
   // Header
   doc.setFontSize(22);
@@ -33,6 +40,7 @@ export function generateInvoicePDF(invoice: Invoice, client: Client): void {
   doc.setTextColor(100);
   doc.text(`Nº: ${invoice.invoiceNumber}`, 14, 28);
   doc.text(`Fecha: ${formatDate(invoice.issueDate)}`, 14, 33);
+  doc.text(`Serie: ${invoice.series} (${invoice.fiscalYear})`, 14, 38);
 
   // Status Stamp
   doc.setFontSize(12);

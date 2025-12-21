@@ -9,7 +9,12 @@ import { useMemo, useCallback } from 'react';
 import { useAppStore, selectInvoices, selectClients } from '@/store';
 import type { Invoice, InvoiceStatus } from '@/types';
 import { storeInvoiceRepository } from '@/data/repositories/storeInvoiceRepository';
-import { setInvoiceStatus, cancelInvoice, deleteDraftInvoice, saveInvoice as saveInvoiceUseCase } from '@/domain/usecases/invoices';
+import {
+  setInvoiceStatus,
+  cancelInvoice,
+  deleteDraftInvoice,
+  saveInvoice as saveInvoiceUseCase,
+} from '@/domain/usecases/invoices';
 
 export function useInvoices() {
   // Store selectors
@@ -18,8 +23,6 @@ export function useInvoices() {
   
   // Store actions
   const saveInvoiceToStore = useAppStore(state => state.saveInvoice);
-  const updateInvoiceStatus = useAppStore(state => state.updateInvoiceStatus);
-  const cancelInvoiceInStore = useAppStore(state => state.cancelInvoice);
   const deleteInvoiceFromStore = useAppStore(state => state.deleteInvoice);
   const getInvoiceById = useAppStore(state => state.getInvoiceById);
   const getNextInvoiceNumber = useAppStore(state => state.getNextInvoiceNumber);
@@ -61,29 +64,33 @@ export function useInvoices() {
         ...invoice,
         clientName: clientName ?? getClientById(invoice.clientId)?.name,
       };
-      await saveInvoiceUseCase(storeInvoiceRepository, enriched);
+      const saved = await saveInvoiceUseCase(storeInvoiceRepository, enriched);
       // Keep store action for reactivity (use cases already use store repo, but this maintains compatibility if store changes)
-      saveInvoiceToStore(enriched);
+      saveInvoiceToStore(saved);
+      return saved;
     },
     [getClientById, saveInvoiceToStore]
   );
 
   const markAsPaid = useCallback(
-    (id: string) => updateInvoiceStatus(id, 'PAID'),
-    [updateInvoiceStatus]
+    async (id: string) => {
+      await setInvoiceStatus(storeInvoiceRepository, id, 'PAID');
+    },
+    []
   );
 
   const markAsPending = useCallback(
-    (id: string) => updateInvoiceStatus(id, 'PENDING'),
-    [updateInvoiceStatus]
+    async (id: string) => {
+      await setInvoiceStatus(storeInvoiceRepository, id, 'PENDING');
+    },
+    []
   );
 
   const cancel = useCallback(
     async (id: string) => {
       await cancelInvoice(storeInvoiceRepository, id);
-      cancelInvoiceInStore(id);
     },
-    [cancelInvoiceInStore]
+    []
   );
 
   const remove = useCallback(

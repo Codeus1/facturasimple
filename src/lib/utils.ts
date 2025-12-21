@@ -5,6 +5,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { LOCALE, CURRENCY } from '@/constants';
+import { DEFAULT_FISCAL_SERIES, INVOICE_SEQUENCE_PADDING, MAX_PAYMENT_TERM_DAYS } from '@/constants';
 
 // ============================================================================
 // CLASS NAME UTILITIES (Tailwind)
@@ -43,6 +44,10 @@ export function formatDateForInput(timestamp: number): string {
 
 export function parseInputDate(dateString: string): number {
   return new Date(dateString).getTime();
+}
+
+export function getFiscalYearFromDate(timestamp: number): number {
+  return new Date(timestamp).getFullYear();
 }
 
 // ============================================================================
@@ -145,17 +150,68 @@ export function calculateInvoiceTotals(params: InvoiceCalculationParams): Invoic
 // INVOICE NUMBER GENERATION
 // ============================================================================
 
-export function generateInvoiceNumber(existingNumbers: string[]): string {
-  const year = new Date().getFullYear();
-  const yearPrefix = `${year}-`;
-  
-  const yearNumbers = existingNumbers
-    .filter(num => num.startsWith(yearPrefix))
-    .map(num => parseInt(num.split('-')[1], 10))
-    .filter(num => !isNaN(num));
+export interface InvoiceNumberParts {
+  series: string;
+  fiscalYear: number;
+  sequence: number;
+}
 
-  const maxSeq = yearNumbers.length > 0 ? Math.max(...yearNumbers) : 0;
-  return `${year}-${String(maxSeq + 1).padStart(4, '0')}`;
+export function buildInvoiceNumber(
+  series: string,
+  fiscalYear: number,
+  sequence: number,
+  padding: number = INVOICE_SEQUENCE_PADDING
+): string {
+  return `${series}-${fiscalYear}-${String(sequence).padStart(padding, '0')}`;
+}
+
+export function parseInvoiceNumber(
+  invoiceNumber: string,
+  fallbackSeries = DEFAULT_FISCAL_SERIES
+): InvoiceNumberParts | null {
+  const normalized = invoiceNumber.trim();
+  const patterns = [
+    /^(?<series>[A-Za-z0-9]+)-(?<year>\d{4})-(?<sequence>\d{3,})$/,
+    /^(?<year>\d{4})-(?<sequence>\d{3,})$/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+    if (match?.groups) {
+      const fiscalYear = Number(match.groups.year);
+      const sequence = Number(match.groups.sequence);
+      if (!Number.isNaN(fiscalYear) && !Number.isNaN(sequence)) {
+        return {
+          series: match.groups.series || fallbackSeries,
+          fiscalYear,
+          sequence,
+        };
+      }
+    }
+  }
+  return null;
+}
+
+export function generateInvoiceNumber(
+  existingNumbers: string[],
+  series: string,
+  fiscalYear: number
+): InvoiceNumberParts & { invoiceNumber: string } {
+  const existingSequences = existingNumbers
+    .map(num => parseInvoiceNumber(num, series))
+    .filter((parts): parts is InvoiceNumberParts => !!parts)
+    .filter(parts => parts.series === series && parts.fiscalYear === fiscalYear)
+    .map(parts => parts.sequence);
+
+  const maxSeq = existingSequences.length > 0 ? Math.max(...existingSequences) : 0;
+  const nextSequence = maxSeq + 1;
+
+  return {
+    series,
+    fiscalYear,
+    sequence: nextSequence,
+    invoiceNumber: buildInvoiceNumber(series, fiscalYear, nextSequence),
+  };
 }
 
 // ============================================================================
@@ -168,6 +224,18 @@ export function isValidEmail(email: string): boolean {
 
 export function isValidNIF(nif: string): boolean {
   return nif.length >= 5;
+}
+
+export function isPaymentTermValid(
+  issueDate: number,
+  dueDate: number,
+  maxTermDays: number = MAX_PAYMENT_TERM_DAYS
+): boolean {
+  if (Number.isNaN(issueDate) || Number.isNaN(dueDate)) return false;
+  if (dueDate < issueDate) return false;
+
+  const maxTermMs = maxTermDays * 24 * 60 * 60 * 1000;
+  return dueDate - issueDate <= maxTermMs;
 }
 
 // ============================================================================

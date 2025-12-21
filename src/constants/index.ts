@@ -26,6 +26,11 @@ export const DEFAULT_IRPF_RATE = 0;
 /** Default due date offset in milliseconds (30 days) */
 export const DEFAULT_DUE_DATE_OFFSET_MS = 30 * 24 * 60 * 60 * 1000;
 
+export const DEFAULT_FISCAL_SERIES = 'FS';
+/** Plazo máximo de pago permitido por normativa local (60 días) */
+export const MAX_PAYMENT_TERM_DAYS = 60;
+export const INVOICE_SEQUENCE_PADDING = 4;
+
 // ============================================================================
 // ISSUER INFO (Your company)
 // ============================================================================

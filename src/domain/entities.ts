@@ -3,6 +3,8 @@
  * Keep schemas as the single source of truth to validate persisted or imported data.
  */
 import { z } from 'zod';
+import { DEFAULT_FISCAL_SERIES, MAX_PAYMENT_TERM_DAYS } from '@/constants';
+import { getFiscalYearFromDate, isPaymentTermValid, parseInvoiceNumber } from '@/lib/utils';
 
 export const clientSchema = z.object({
   id: z.string().min(1, 'Client id is required'),
@@ -26,6 +28,9 @@ export const invoiceItemSchema = z.object({
 export const invoiceSchema = z.object({
   id: z.string().min(1),
   invoiceNumber: z.string().min(1),
+  series: z.string().min(1).default(DEFAULT_FISCAL_SERIES),
+  fiscalYear: z.number().int().min(2000).default(() => getFiscalYearFromDate(Date.now())),
+  sequence: z.number().int().nonnegative().default(0),
   clientId: z.string().min(1),
   clientName: z.string().optional(),
   issueDate: z.number().int(),
@@ -39,6 +44,36 @@ export const invoiceSchema = z.object({
   irpfRate: z.number(),
   irpfAmount: z.number(),
   totalAmount: z.number(),
+  createdAt: z.number().int().nonnegative().default(() => Date.now()),
+  updatedAt: z.number().int().nonnegative().default(() => Date.now()),
+  statusChangedAt: z.number().int().nonnegative().optional(),
+}).superRefine((data, ctx) => {
+  const now = Date.now();
+  if (data.issueDate > now) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['issueDate'],
+      message: 'La fecha de emisión no puede ser futura',
+    });
+  }
+
+  if (!isPaymentTermValid(data.issueDate, data.dueDate, MAX_PAYMENT_TERM_DAYS)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['dueDate'],
+      message: `El vencimiento debe ser posterior a la emisión y no superar ${MAX_PAYMENT_TERM_DAYS} días`,
+    });
+  }
+
+  const parsedNumber = parseInvoiceNumber(data.invoiceNumber, data.series);
+  const fiscalYearFromNumber = parsedNumber?.fiscalYear ?? data.fiscalYear;
+  if (fiscalYearFromNumber !== getFiscalYearFromDate(data.issueDate)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['invoiceNumber'],
+      message: 'La numeración debe corresponder al año fiscal de emisión',
+    });
+  }
 });
 
 export type InvoiceEntity = z.infer<typeof invoiceSchema>;

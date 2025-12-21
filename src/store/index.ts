@@ -120,9 +120,12 @@ export const useAppStore = create<AppStore>()(
       // ------------------------------------------------------------------
       addClient: (clientData) => {
         const client: Client = {
+          tenantId: clientData.tenantId,
+          ownerId: clientData.ownerId,
           ...clientData,
           id: generateId(),
-          createdAt: Date.now(),
+          createdAt: clientData.createdAt ?? Date.now(),
+          updatedAt: Date.now(),
         };
         set(state => ({
           clients: [...state.clients, client],
@@ -132,7 +135,7 @@ export const useAppStore = create<AppStore>()(
 
       updateClient: (client) => {
         set(state => ({
-          clients: updateById(state.clients, client),
+          clients: updateById(state.clients, { ...client, updatedAt: Date.now() }),
         }));
       },
 
